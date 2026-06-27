@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "645135066332",
+    "firebase_url": "https://kahoot-clone-39e22-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "kahoot-clone-39e22",
+    "storage_bucket": "kahoot-clone-39e22.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:645135066332:android:b3834469f4daaff2400019",
+        "android_client_info": {
+          "package_name": "com.example.kahoot_clone"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "645135066332-i6fu4u45c60132ukv12baqoqgmg35p6o.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDvRlC5ZFepMdzjoZE1crbIteoL-LoofSc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "645135066332-i6fu4u45c60132ukv12baqoqgmg35p6o.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
