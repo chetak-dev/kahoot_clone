@@ -68,6 +68,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
+  Future<void> _goToHostSignIn() async {
+    // End the anonymous guest session, otherwise the router's redirect
+    // guard sends a logged-in user straight back to '/'.
+    await ref.read(authNotifierProvider.notifier).signOut();
+    if (mounted) context.go('/login');
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -77,9 +85,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final selectedTab = ref.watch(_selectedTabProvider);
 
     final tabs = [
-      _HomeTab(isHost: isHost, user: user),
+      _HomeTab(isHost: isHost, user: user, onHostSignIn: _goToHostSignIn),
       if (isHost) const MyQuizzesScreen(),
     ];
+
 
     return PopScope(
       canPop: false,
@@ -164,8 +173,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 class _HomeTab extends StatelessWidget {
   final bool isHost;
   final dynamic user;
+  final VoidCallback onHostSignIn;
 
-  const _HomeTab({required this.isHost, required this.user});
+  const _HomeTab({
+    required this.isHost,
+    required this.user,
+    required this.onHostSignIn,
+  });
+
 
   @override
   Widget build(BuildContext context) {
@@ -230,34 +245,8 @@ class _HomeTab extends StatelessWidget {
                 onTap: () => context.push('/game-history'),
               ),
 
-            ] else ...[
-              // Highlighted primary call-to-action
-              _PrimaryActionButton(
-                icon: Icons.gamepad_rounded,
-                label: 'Join a Game',
-                subtitle: 'Enter a PIN to join a live quiz',
-                onTap: () => context.go('/join-game'),
-              ),
-              const SizedBox(height: 28),
-              // Secondary, de-emphasized host sign-in
-              TextButton.icon(
-                onPressed: () => context.go('/host-login'), // <-- set to your host sign-in route
-                style: TextButton.styleFrom(
-                  padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                ),
-                icon: Icon(Icons.login_rounded,
-                    color: Colors.white.withOpacity(0.6), size: 18),
-                label: Text(
-                  'Host Sign In',
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.6),
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
-                  ),
-                ),
-              ),
-            ],
+            ]
+
 
           ],
         ),
@@ -339,81 +328,3 @@ class _ActionCard extends StatelessWidget {
     );
   }
 }
-
-class _PrimaryActionButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String subtitle;
-  final VoidCallback onTap;
-
-  const _PrimaryActionButton({
-    required this.icon,
-    required this.label,
-    required this.subtitle,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(20),
-        child: Ink(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 26),
-          decoration: BoxDecoration(
-            color: AppTheme.accent,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: AppTheme.accent.withOpacity(0.45),
-                blurRadius: 24,
-                offset: const Offset(0, 10),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(icon, color: Colors.white, size: 32),
-              ),
-              const SizedBox(width: 18),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      label,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      subtitle,
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.85),
-                        fontSize: 13,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const Icon(Icons.arrow_forward_rounded, color: Colors.white),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-

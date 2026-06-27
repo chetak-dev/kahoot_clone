@@ -22,6 +22,18 @@ class _HostQuestionScreenState extends ConsumerState<HostQuestionScreen> {
   Timer? _timer;
   int _lastQuestionIndex = -1;
   bool _timerDone = false;
+  int? _startAtMs;
+  int _durationSeconds = 0;
+  int _serverOffsetMs = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    GameRepository().getServerTimeOffset().then((v) {
+      if (mounted) setState(() => _serverOffsetMs = v);
+    });
+  }
+
 
   @override
   void dispose() {
@@ -29,24 +41,36 @@ class _HostQuestionScreenState extends ConsumerState<HostQuestionScreen> {
     super.dispose();
   }
 
-  void _startTimer(int seconds, QuizModel quiz, GameSessionModel session) {
+  void _startTimer(GameSessionModel session, int totalSeconds) {
     _timer?.cancel();
+    _startAtMs = session.questionStartAtMs;
+    _durationSeconds = session.questionDurationSeconds ?? totalSeconds;
     setState(() {
-      _timeLeft = seconds;
+      _timeLeft = _computeRemaining();
       _timerDone = false;
     });
-    _timer = Timer.periodic(const Duration(seconds: 1), (t) {
-      if (_timeLeft <= 0) {
+    _timer = Timer.periodic(const Duration(milliseconds: 250), (t) {
+      if (!mounted) return;
+      final left = _computeRemaining();
+      if (left != _timeLeft) setState(() => _timeLeft = left);
+      if (left <= 0) {
         t.cancel();
-        setState(() => _timerDone = true);
-        // Always go to the live leaderboard; it auto-advances to the next
-        // question (or final results) after a short countdown.
-        ref.read(gameNotifierProvider.notifier).showLeaderboard(widget.pin);
-      } else {
-        setState(() => _timeLeft--);
+        if (!_timerDone) {
+          setState(() => _timerDone = true);
+          ref.read(gameNotifierProvider.notifier).showLeaderboard(widget.pin);
+        }
       }
     });
   }
+
+  int _computeRemaining() {
+    if (_startAtMs == null) return _durationSeconds;
+    final serverNow = DateTime.now().millisecondsSinceEpoch + _serverOffsetMs;
+    final endsAtMs = _startAtMs! + _durationSeconds * 1000;
+    return ((endsAtMs - serverNow) / 1000).ceil().clamp(0, 999);
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -134,7 +158,7 @@ class _HostQuestionScreenState extends ConsumerState<HostQuestionScreen> {
             if (_lastQuestionIndex != session.currentQuestion) {
               _lastQuestionIndex = session.currentQuestion;
               WidgetsBinding.instance.addPostFrameCallback((_) {
-                _startTimer(question.timeLimitSeconds, quiz, session);
+                _startTimer(session, question.timeLimitSeconds);
               });
             }
 

@@ -21,6 +21,9 @@ import '../presentation/results/results_screen.dart';
 import '../presentation/create_quiz/add_question_screen.dart';
 import '../data/models/question_model.dart';
 import '../presentation/home/game_history_screen.dart';
+import '../presentation/auth/host_login_screen.dart';
+import '../presentation/results/answer_review_screen.dart';
+
 
 
 
@@ -47,7 +50,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isHost = user?.isHost ?? false;
 
       final location = state.matchedLocation;
-      final isAuthRoute = location == '/login' || location == '/signup';
+      final isAuthRoute = location == '/login' ||
+          location == '/signup' ||
+          location == '/host-login';
+
 
       if (!isLoggedIn && !isAuthRoute) return '/login';
       if (isLoggedIn && isAuthRoute) return '/';
@@ -76,6 +82,12 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/signup',
         builder: (context, state) => const SignupScreen(),
       ),
+
+      GoRoute(
+        path: '/host-login',
+        builder: (context, state) => const HostLoginScreen(),
+      ),
+
 
       // ── Home ─────────────────────────────────────────────────────────────
       GoRoute(
@@ -177,6 +189,15 @@ final routerProvider = Provider<GoRouter>((ref) {
           return ResultsScreen(pin: pin);
         },
       ),
+
+      GoRoute(
+        path: '/review/:pin',
+        builder: (context, state) {
+          final pin = state.pathParameters['pin']!;
+          return AnswerReviewScreen(pin: pin);
+        },
+      ),
+
 
       GoRoute(
         path: '/add-question',

@@ -118,7 +118,7 @@ class _HostGameScreenState extends ConsumerState<HostGameScreen> {
     _countdownTimer?.cancel();
     _countdownTimer = Timer(const Duration(seconds: 10), () {
       if (!mounted) return;
-      ref.read(gameNotifierProvider.notifier).nextQuestion(_pin!, 0);
+      ref.read(gameNotifierProvider.notifier).nextQuestion(_pin!, 0, durationSeconds: widget.quiz.questions.first.timeLimitSeconds,);
     });
   }
 

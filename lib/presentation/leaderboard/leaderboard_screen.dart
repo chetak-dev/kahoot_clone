@@ -73,9 +73,13 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
       if (isHost) await _saveResults(session, _quiz!); // only host may save (rules)
       await ref.read(gameNotifierProvider.notifier).endGame(widget.pin);
     } else {
-      await ref
-          .read(gameNotifierProvider.notifier)
-          .nextQuestion(widget.pin, session.currentQuestion + 1);
+      await ref.read(gameNotifierProvider.notifier).nextQuestion(
+        widget.pin,
+        session.currentQuestion + 1,
+        durationSeconds: _quiz!
+            .questions[session.currentQuestion + 1].timeLimitSeconds,
+      );
+
     }
 
   }
@@ -146,6 +150,8 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
               context.go('/results/${widget.pin}');
             });
           }
+
+
 
           final sorted = session.players.values.toList()
             ..sort((a, b) => b.score.compareTo(a.score));

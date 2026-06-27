@@ -54,14 +54,16 @@ class GameNotifier extends AsyncNotifier<void> {
   }
 
   // Host: start game
-  Future<void> startGame(String pin) async {
-    await _repo.nextQuestion(pin, 0);
+  Future<void> startGame(String pin, {int? durationSeconds}) async {
+    await _repo.nextQuestion(pin, 0, durationSeconds: durationSeconds);
   }
 
   // Host: next question
-  Future<void> nextQuestion(String pin, int index) async {
-    await _repo.nextQuestion(pin, index);
+  Future<void> nextQuestion(String pin, int index,
+      {int? durationSeconds}) async {
+    await _repo.nextQuestion(pin, index, durationSeconds: durationSeconds);
   }
+
 
   // Host: show leaderboard
   Future<void> showLeaderboard(String pin) async {

@@ -15,6 +15,10 @@ class GameSessionModel {
   final Map<String, PlayerSession> players;
   final DateTime createdAt;
   final DateTime? countdownEndsAt;
+  final int? questionStartAtMs;       // server timestamp (ms) when question began
+  final int? questionDurationSeconds; // question time limit (seconds)
+
+
 
   GameSessionModel({
     required this.gamePin,
@@ -25,6 +29,9 @@ class GameSessionModel {
     required this.players,
     required this.createdAt,
     this.countdownEndsAt,
+    this.questionStartAtMs,
+    this.questionDurationSeconds,
+
   });
 
   Map<String, dynamic> toMap() => {
@@ -36,6 +43,9 @@ class GameSessionModel {
     'players': players.map((k, v) => MapEntry(k, v.toMap())),
     'createdAt': createdAt.toIso8601String(),
     'countdownEndsAt': countdownEndsAt?.toIso8601String(),
+    'questionStartAtMs': questionStartAtMs,
+    'questionDurationSeconds': questionDurationSeconds,
+
   };
 
   factory GameSessionModel.fromMap(Map<String, dynamic> map) =>
@@ -53,6 +63,10 @@ class GameSessionModel {
         countdownEndsAt: map['countdownEndsAt'] != null
             ? DateTime.tryParse(map['countdownEndsAt'])
             : null,
+        questionStartAtMs: (map['questionStartAtMs'] as num?)?.toInt(),
+        questionDurationSeconds:
+        (map['questionDurationSeconds'] as num?)?.toInt(),
+
       );
 }
 

@@ -6,6 +6,8 @@ import 'package:csv/csv.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import '../models/question_model.dart';
+import 'file_saver_io.dart' if (dart.library.html) 'file_saver_web.dart';
+
 
 class CsvImportService {
   // ── Sample CSV ───────────────────────────────────────────────────────────────
@@ -21,21 +23,15 @@ Which planet is known as the Red Planet?,mcq,Venus,Mars,Jupiter,Saturn,B,30,stan
     try {
       final Uint8List bytes =
       Uint8List.fromList(utf8.encode(sampleCsvContent));
-
-      // On Android, passing `bytes` makes file_picker write the file to the
-      // location the user chooses in the system document picker.
-      await FilePicker.platform.saveFile(
-        dialogTitle: 'Save sample CSV',
-        fileName: 'sample_quiz.csv',
-        type: FileType.custom,
-        allowedExtensions: ['csv'],
-        bytes: bytes,
-      );
+      // Web -> browser download; mobile/desktop -> system "Save As".
+      // (FilePicker.saveFile is unsupported on web.)
+      await saveCsvFile('sample_quiz.csv', bytes);
     } catch (e) {
       debugPrint('Error saving sample CSV: $e');
       rethrow;
     }
   }
+
 
   // ── Import CSV ───────────────────────────────────────────────────────────────
 

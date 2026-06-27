@@ -68,12 +68,20 @@ class GameRepository {
         .set(status.name);
   }
 
-  Future<void> nextQuestion(String pin, int questionIndex) async {
-    await _db.ref('game_sessions/$pin').update({
+  Future<void> nextQuestion(String pin, int questionIndex,
+      {int? durationSeconds}) async {
+    final updates = <String, dynamic>{
       'currentQuestion': questionIndex,
       'status': GameStatus.question.name,
-    });
+    };
+    if (durationSeconds != null) {
+      updates['questionStartAtMs'] = ServerValue.timestamp;
+      updates['questionDurationSeconds'] = durationSeconds;
+    }
+
+    await _db.ref('game_sessions/$pin').update(updates);
   }
+
 
   // Player: submit answer
   Future<void> submitAnswer(
@@ -153,6 +161,15 @@ class GameRepository {
   Future<void> deleteGameResult(String id) async {
     await _firestore.collection('game_results').doc(id).delete();
   }
+
+  // Difference (ms) between this device's clock and Firebase's server clock.
+  Future<int> getServerTimeOffset() async {
+    final snap = await _db.ref('.info/serverTimeOffset').get();
+    final v = snap.value;
+    if (v is num) return v.toInt();
+    return 0;
+  }
+
 
 
 

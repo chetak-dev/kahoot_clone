@@ -6,7 +6,6 @@ import '../models/user_model.dart';
 
 // ─── Hardcoded host credentials ───────────────────────────────────────────────
 const String _kHostEmail = 'chetak526@gmail.com';
-const String _kHostPassword = 'Krishna@2942';
 // ──────────────────────────────────────────────────────────────────────────────
 
 class AuthRepository {

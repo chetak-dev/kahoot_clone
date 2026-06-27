@@ -130,13 +130,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ),
                 child: const Text.rich(
                   TextSpan(
-                    text: 'Are you a host?  ',
+                    text: 'Are you a host? ',
                     children: [
                       TextSpan(
                         text: 'Sign in',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          decoration: TextDecoration.underline,
                         ),
                       ),
                     ],
@@ -144,7 +143,23 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ),
               ),
 
+              const SizedBox(height: 200),
+              // ── Footer credit ────────────────────────────────────────────
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text('Made with ',
+                      style: TextStyle(
+                          color: Colors.white.withOpacity(0.7), fontSize: 16)),
+                  const Icon(Icons.favorite, color: Colors.redAccent, size: 17),
+                  Text(' by VOGI Team',
+                      style: TextStyle(
+                          color: Colors.white.withOpacity(0.7), fontSize: 16)),
+                ],
+              ),
+
             ],
+
           ),
         ),
       ),

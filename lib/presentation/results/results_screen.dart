@@ -3,6 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/app_theme.dart';
 import '../../data/services/game_provider.dart';
+import '../../core/utils/nav_helpers.dart';
+import '../../core/utils/nav_helpers.dart';
+
 
 class ResultsScreen extends ConsumerWidget {
   final String pin;
@@ -40,7 +43,7 @@ class ResultsScreen extends ConsumerWidget {
                   const SizedBox(height: 24),
                   ElevatedButton(
                     // ✅ Fixed: /home → /
-                    onPressed: () => context.go('/'),
+                    onPressed: () => goHome(context, ref),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.accent,
                       foregroundColor: Colors.black,
@@ -137,25 +140,39 @@ class ResultsScreen extends ConsumerWidget {
                     ),
                   ),
 
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      // ✅ Fixed: /home → /
-                      onPressed: () => context.go('/'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.accent,
-                        foregroundColor: Colors.black,
-                        padding:
-                        const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12)),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => context.go('/review/$pin'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Colors.white,
+                            side: const BorderSide(color: Colors.white38),
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                          ),
+                          child: const Text('Review answers'),
+                        ),
                       ),
-                      child: const Text('Back to Home',
-                          style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold)),
-                    ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () => goHome(context, ref),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.accent,
+                            foregroundColor: Colors.black,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
+                          ),
+                          child: const Text('Home',
+                              style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold)),
+                        ),
+                      ),
+                    ],
                   ),
+
                 ],
               ),
             ),
