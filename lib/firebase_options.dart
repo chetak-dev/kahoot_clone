@@ -59,7 +59,6 @@ class DefaultFirebaseOptions {
     databaseURL: 'https://kahoot-clone-39e22-default-rtdb.asia-southeast1.firebasedatabase.app',
     storageBucket: 'kahoot-clone-39e22.firebasestorage.app',
   );
-
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyDTd-PFvDHgUAn4crtcibZI8riaAJq6ZYQ',
     appId: '1:645135066332:ios:4912e775714b897c400019',
@@ -70,7 +69,6 @@ class DefaultFirebaseOptions {
     iosClientId: '645135066332-f71ao6256jbiuq3srql4lbh54pgisjj6.apps.googleusercontent.com',
     iosBundleId: 'com.example.kahootClone',
   );
-
   static const FirebaseOptions macos = FirebaseOptions(
     apiKey: 'AIzaSyDTd-PFvDHgUAn4crtcibZI8riaAJq6ZYQ',
     appId: '1:645135066332:ios:4912e775714b897c400019',

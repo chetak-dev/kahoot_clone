@@ -1,5 +1,15 @@
 {
   "projects": {
     "default": "kahoot-clone-39e22"
-  }
+  },
+  "targets": {
+    "kahoot-clone-39e22": {
+      "hosting": {
+        "myapp": [
+          "vogiquiz"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }

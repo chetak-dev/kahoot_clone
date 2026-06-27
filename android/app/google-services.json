@@ -30,6 +30,13 @@
             {
               "client_id": "645135066332-i6fu4u45c60132ukv12baqoqgmg35p6o.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "645135066332-f71ao6256jbiuq3srql4lbh54pgisjj6.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.kahootClone"
+              }
             }
           ]
         }

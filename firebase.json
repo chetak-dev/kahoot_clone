@@ -1,1 +1,40 @@
-{"hosting":{"public":"build/web","ignore":["firebase.json","**/.*","**/node_modules/**"],"rewrites":[{"source":"**","destination":"/index.html"}]},"flutter":{"platforms":{"android":{"default":{"projectId":"kahoot-clone-39e22","appId":"1:645135066332:android:b3834469f4daaff2400019","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"kahoot-clone-39e22","configurations":{"android":"1:645135066332:android:b3834469f4daaff2400019","ios":"1:645135066332:ios:4912e775714b897c400019","macos":"1:645135066332:ios:4912e775714b897c400019","web":"1:645135066332:web:fad05b9628fd36f8400019","windows":"1:645135066332:web:0e2885871ee94f1b400019"}}}}}}
+{
+  "hosting": {
+    "target": "myapp",
+    "public": "build/web",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  },
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "kahoot-clone-39e22",
+          "appId": "1:645135066332:android:b3834469f4daaff2400019",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "kahoot-clone-39e22",
+          "configurations": {
+            "android": "1:645135066332:android:b3834469f4daaff2400019",
+            "ios": "1:645135066332:ios:4912e775714b897c400019",
+            "macos": "1:645135066332:ios:4912e775714b897c400019",
+            "web": "1:645135066332:web:fad05b9628fd36f8400019",
+            "windows": "1:645135066332:web:0e2885871ee94f1b400019"
+          }
+        }
+      }
+    }
+  }
+}
