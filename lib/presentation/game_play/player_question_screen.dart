@@ -234,7 +234,7 @@ class _PlayerQuestionScreenState extends ConsumerState<PlayerQuestionScreen> {
                         minHeight: 8,
                       ),
                       Padding(
-                        padding: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
                         child: Column(
                           children: [
                             Row(
@@ -262,20 +262,21 @@ class _PlayerQuestionScreenState extends ConsumerState<PlayerQuestionScreen> {
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: 10),
                             Container(
                               width: double.infinity,
-                              padding: const EdgeInsets.all(20),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 12),
                               decoration: BoxDecoration(
                                 color: Colors.white10,
-                                borderRadius: BorderRadius.circular(16),
+                                borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
                                 question.question,
                                 textAlign: TextAlign.center,
                                 style: const TextStyle(
                                     color: Colors.white,
-                                    fontSize: 20,
+                                    fontSize: 17,
                                     fontWeight: FontWeight.bold),
                               ),
                             ),
@@ -362,73 +363,64 @@ class _PlayerQuestionScreenState extends ConsumerState<PlayerQuestionScreen> {
       );
     }
 
-    return Column(
-      children: [
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-            child: Column(
-              children: options.asMap().entries.map((e) {
-                final index = e.key;
-                final option = e.value;
-                final isSelected = _selectedAnswer == option;
-                return Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: GestureDetector(
-                      onTap: () => setState(() => _selectedAnswer = option),
-                      child: Container(
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          color: _optionColors[index % _optionColors.length],
-                          borderRadius: BorderRadius.circular(16),
-                          border: isSelected
-                              ? Border.all(color: Colors.white, width: 4)
-                              : null,
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  option,
-                                  textAlign: TextAlign.center,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                              if (isSelected)
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 10, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: const Text('✓',
-                                      style: TextStyle(
-                                          color: Colors.black,
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.bold)),
-                                ),
-                            ],
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+      child: Column(
+        children: [
+          ...options.asMap().entries.map((e) {
+            final index = e.key;
+            final option = e.value;
+            final isSelected = _selectedAnswer == option;
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: GestureDetector(
+                onTap: () => setState(() => _selectedAnswer = option),
+                child: Container(
+                  height: 48,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: _optionColors[index % _optionColors.length],
+                    borderRadius: BorderRadius.circular(10),
+                    border: isSelected
+                        ? Border.all(color: Colors.white, width: 3)
+                        : null,
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          option,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
-                    ),
+                      if (isSelected)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Text('✓',
+                              style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold)),
+                        ),
+                    ],
                   ),
-                );
-              }).toList(),
-            ),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-          child: SizedBox(
+                ),
+              ),
+            );
+          }),
+          const SizedBox(height: 4),
+          SizedBox(
             width: double.infinity,
             child: ElevatedButton(
               onPressed: _selectedAnswer == null ? null : () => _lockIn(),
@@ -436,21 +428,19 @@ class _PlayerQuestionScreenState extends ConsumerState<PlayerQuestionScreen> {
                 backgroundColor: AppTheme.accent,
                 foregroundColor: Colors.black,
                 disabledBackgroundColor: Colors.white24,
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                padding: const EdgeInsets.symmetric(vertical: 13),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
+                    borderRadius: BorderRadius.circular(10)),
               ),
               child: Text(
-                _selectedAnswer == null
-                    ? 'Select an option'
-                    : 'Submit Answer',
+                _selectedAnswer == null ? 'Select an option' : 'Submit Answer',
                 style: const TextStyle(
-                    fontSize: 16, fontWeight: FontWeight.bold),
+                    fontSize: 15, fontWeight: FontWeight.bold),
               ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
