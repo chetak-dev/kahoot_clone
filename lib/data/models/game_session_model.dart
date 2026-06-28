@@ -15,10 +15,8 @@ class GameSessionModel {
   final Map<String, PlayerSession> players;
   final DateTime createdAt;
   final DateTime? countdownEndsAt;
-  final int? questionStartAtMs;       // server timestamp (ms) when question began
-  final int? questionDurationSeconds; // question time limit (seconds)
-
-
+  final int? questionStartAtMs;
+  final int? questionDurationSeconds;
 
   GameSessionModel({
     required this.gamePin,
@@ -31,7 +29,6 @@ class GameSessionModel {
     this.countdownEndsAt,
     this.questionStartAtMs,
     this.questionDurationSeconds,
-
   });
 
   Map<String, dynamic> toMap() => {
@@ -45,7 +42,6 @@ class GameSessionModel {
     'countdownEndsAt': countdownEndsAt?.toIso8601String(),
     'questionStartAtMs': questionStartAtMs,
     'questionDurationSeconds': questionDurationSeconds,
-
   };
 
   factory GameSessionModel.fromMap(Map<String, dynamic> map) =>
@@ -66,7 +62,6 @@ class GameSessionModel {
         questionStartAtMs: (map['questionStartAtMs'] as num?)?.toInt(),
         questionDurationSeconds:
         (map['questionDurationSeconds'] as num?)?.toInt(),
-
       );
 }
 
@@ -74,13 +69,15 @@ class PlayerSession {
   final String playerId;
   final String name;
   final int score;
-  final Map<String, String> answers; // questionId -> answerId
+  final Map<String, String> answers;
+  final int totalResponseTimeMs; // tiebreaker — lower = faster = better rank
 
   PlayerSession({
     required this.playerId,
     required this.name,
     required this.score,
     required this.answers,
+    this.totalResponseTimeMs = 0,
   });
 
   Map<String, dynamic> toMap() => {
@@ -88,6 +85,7 @@ class PlayerSession {
     'name': name,
     'score': score,
     'answers': answers,
+    'totalResponseTimeMs': totalResponseTimeMs,
   };
 
   factory PlayerSession.fromMap(Map<String, dynamic> map) => PlayerSession(
@@ -95,5 +93,7 @@ class PlayerSession {
     name: map['name'],
     score: map['score'] ?? 0,
     answers: Map<String, String>.from(map['answers'] ?? {}),
+    totalResponseTimeMs:
+    (map['totalResponseTimeMs'] as num?)?.toInt() ?? 0,
   );
 }

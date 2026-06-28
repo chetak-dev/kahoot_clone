@@ -47,25 +47,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    const SizedBox(height: 48),
-                    const Icon(Icons.quiz_rounded,
-                        size: 84, color: AppTheme.accent),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'QuizLive',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 34,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
+                    Image.asset('assets/images/logo.png', height: 250),
+                        const SizedBox(height: 16),
+                    const SizedBox(height: 58),
                     Text(
-                      'Play live quizzes in real time',
+                      'Get Ready for a Multiplayer Live Quiz Game',
                       style:
-                          TextStyle(color: Colors.white.withOpacity(0.5)),
+                          TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 18),
                     ),
-                    const SizedBox(height: 64),
+                    const SizedBox(height: 24),
 
                     if (_error != null) ...[
                       Container(

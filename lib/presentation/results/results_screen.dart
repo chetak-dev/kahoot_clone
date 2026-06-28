@@ -58,7 +58,12 @@ class ResultsScreen extends ConsumerWidget {
         }
 
         final sorted = session.players.values.toList()
-          ..sort((a, b) => b.score.compareTo(a.score));
+          ..sort((a, b) {
+            final scoreDiff = b.score.compareTo(a.score);
+            if (scoreDiff != 0) return scoreDiff;
+            return a.totalResponseTimeMs.compareTo(b.totalResponseTimeMs);
+          });
+
 
         return Scaffold(
           backgroundColor: AppTheme.background,

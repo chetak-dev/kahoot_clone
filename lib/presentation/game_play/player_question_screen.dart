@@ -23,38 +23,45 @@ class PlayerQuestionScreen extends ConsumerStatefulWidget {
 }
 
 class _PlayerQuestionScreenState extends ConsumerState<PlayerQuestionScreen> {
-  String? _selectedAnswer; // tentative selection (changeable until submit)
-  bool _answered = false; // locked in
+  String? _selectedAnswer;
+  bool _answered = false;
   int _timeLeft = 0;
   Timer? _ticker;
   Timer? _fallbackTimer;
   int _lastQuestionIndex = -1;
   QuestionModel? _currentQuestion;
-  int? _startAtMs;          // server timestamp when the question started
-  int _durationSeconds = 0; // question time limit
-  int _serverOffsetMs = 0;  // this device's clock vs Firebase server clock
+  int? _startAtMs;
+  int _durationSeconds = 0;
+  int _serverOffsetMs = 0;
+
+  static const _labels = ['A', 'B', 'C', 'D'];
+  static const _labelColors = [
+    Color(0xFFE57373), // soft red
+    Color(0xFF64B5F6), // soft blue
+    Color(0xFFFFB74D), // soft amber
+    Color(0xFF81C784), // soft green
+  ];
+
+  StreamSubscription? _offsetSub;
 
   @override
   void initState() {
     super.initState();
-    GameRepository().getServerTimeOffset().then((v) {
-      if (mounted) setState(() => _serverOffsetMs = v);
+    // Stay in sync with server clock continuously
+    _offsetSub = GameRepository().watchServerTimeOffset().listen((offset) {
+      if (mounted) setState(() => _serverOffsetMs = offset);
     });
   }
 
-  final List<Color> _optionColors = [
-    Colors.red,
-    Colors.blue,
-    Colors.orange,
-    Colors.green,
-  ];
-
   @override
   void dispose() {
+    _offsetSub?.cancel();
     _ticker?.cancel();
     _fallbackTimer?.cancel();
     super.dispose();
   }
+
+
 
   int _pointsValue(PointsType points) {
     switch (points) {
@@ -74,7 +81,6 @@ class _PlayerQuestionScreenState extends ConsumerState<PlayerQuestionScreen> {
     return ((endsAtMs - serverNow) / 1000).ceil().clamp(0, 999);
   }
 
-  // Count down to the server-stamped start so host & players match exactly.
   void _startTimer(
       GameSessionModel session, QuestionModel question, int questionIndex) {
     _ticker?.cancel();
@@ -100,7 +106,6 @@ class _PlayerQuestionScreenState extends ConsumerState<PlayerQuestionScreen> {
     });
   }
 
-
   void _scheduleFallback(int questionIndex) {
     _fallbackTimer?.cancel();
     final delay = 2000 + Random().nextInt(1500);
@@ -117,19 +122,32 @@ class _PlayerQuestionScreenState extends ConsumerState<PlayerQuestionScreen> {
 
   Future<void> _lockIn({bool auto = false}) async {
     if (_answered) return;
-    final question = _currentQuestion;
     setState(() => _answered = true);
+
+    // Timer ran out — user never clicked Submit, selection doesn't count
+    if (auto) return;
+
+    final question = _currentQuestion;
     final answer = _selectedAnswer;
-    if (question == null || answer == null) return; // timed out, no choice
+    if (question == null || answer == null) return;
+
+    // How fast the player answered (capped at the question duration)
+    final responseTimeMs = _startAtMs != null
+        ? (DateTime.now().millisecondsSinceEpoch + _serverOffsetMs - _startAtMs!)
+        .clamp(0, _durationSeconds * 1000)
+        : _durationSeconds * 1000;
+
     final isCorrect = question.correctAnswers
         .map((a) => a.toLowerCase())
         .contains(answer.toLowerCase());
     final earned = isCorrect ? _pointsValue(question.points) : 0;
+
     await ref.read(gameNotifierProvider.notifier).submitAnswer(
       widget.pin,
       question.id,
       answer,
       earned,
+      responseTimeMs,
     );
   }
 
@@ -166,8 +184,8 @@ class _PlayerQuestionScreenState extends ConsumerState<PlayerQuestionScreen> {
       child: gameAsync.when(
         loading: () => const Scaffold(
           backgroundColor: AppTheme.primary,
-          body:
-          Center(child: CircularProgressIndicator(color: AppTheme.accent)),
+          body: Center(
+              child: CircularProgressIndicator(color: AppTheme.accent)),
         ),
         error: (e, _) => Scaffold(
           backgroundColor: AppTheme.primary,
@@ -203,8 +221,8 @@ class _PlayerQuestionScreenState extends ConsumerState<PlayerQuestionScreen> {
                 return const Scaffold(
                   backgroundColor: AppTheme.primary,
                   body: Center(
-                      child:
-                      CircularProgressIndicator(color: AppTheme.accent)),
+                      child: CircularProgressIndicator(
+                          color: AppTheme.accent)),
                 );
               }
 
@@ -215,7 +233,10 @@ class _PlayerQuestionScreenState extends ConsumerState<PlayerQuestionScreen> {
               if (_lastQuestionIndex != session.currentQuestion) {
                 _lastQuestionIndex = session.currentQuestion;
                 final qIndex = session.currentQuestion;
-                WidgetsBinding.instance.addPostFrameCallback((_) {
+                // Re-fetch fresh offset for THIS question, then start timer
+                GameRepository().getServerTimeOffset().then((offset) {
+                  if (!mounted) return;
+                  setState(() => _serverOffsetMs = offset);
                   _startTimer(session, question, qIndex);
                 });
               }
@@ -226,15 +247,20 @@ class _PlayerQuestionScreenState extends ConsumerState<PlayerQuestionScreen> {
                 body: SafeArea(
                   child: Column(
                     children: [
+                      // Progress bar
                       LinearProgressIndicator(
-                        value:
-                        total == 0 ? 0 : (_timeLeft / total).clamp(0, 1),
+                        value: total == 0
+                            ? 0
+                            : (_timeLeft / total).clamp(0, 1),
                         backgroundColor: Colors.white24,
                         color: _timeLeft > 5 ? Colors.green : Colors.red,
                         minHeight: 8,
                       ),
+
+                      // Question header
                       Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                        padding:
+                        const EdgeInsets.fromLTRB(16, 8, 16, 8),
                         child: Column(
                           children: [
                             Row(
@@ -243,8 +269,8 @@ class _PlayerQuestionScreenState extends ConsumerState<PlayerQuestionScreen> {
                               children: [
                                 Text(
                                   'Q${session.currentQuestion + 1}/${quiz.questions.length}',
-                                  style:
-                                  const TextStyle(color: Colors.white70),
+                                  style: const TextStyle(
+                                      color: Colors.white70),
                                 ),
                                 Container(
                                   padding: const EdgeInsets.symmetric(
@@ -253,7 +279,8 @@ class _PlayerQuestionScreenState extends ConsumerState<PlayerQuestionScreen> {
                                     color: _timeLeft > 5
                                         ? Colors.green
                                         : Colors.red,
-                                    borderRadius: BorderRadius.circular(20),
+                                    borderRadius:
+                                    BorderRadius.circular(20),
                                   ),
                                   child: Text('$_timeLeft',
                                       style: const TextStyle(
@@ -283,11 +310,47 @@ class _PlayerQuestionScreenState extends ConsumerState<PlayerQuestionScreen> {
                           ],
                         ),
                       ),
+
+                      // Options or locked view
                       Expanded(
                         child: _answered
                             ? _buildLockedView()
                             : _buildOptionsView(question),
                       ),
+
+                      // Submit button pinned at bottom
+                      if (!_answered)
+                        Padding(
+                          padding:
+                          const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                          child: SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: _selectedAnswer == null
+                                  ? null
+                                  : () => _lockIn(),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppTheme.accent,
+                                foregroundColor: Colors.black,
+                                disabledBackgroundColor:
+                                Colors.white.withOpacity(0.1),
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 14),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius:
+                                    BorderRadius.circular(10)),
+                              ),
+                              child: Text(
+                                _selectedAnswer == null
+                                    ? 'Select an option'
+                                    : 'Submit Answer',
+                                style: const TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ),
+                        ),
                     ],
                   ),
                 ),
@@ -299,7 +362,6 @@ class _PlayerQuestionScreenState extends ConsumerState<PlayerQuestionScreen> {
     );
   }
 
-  // ── Locked-in view: shows the selection only — never correctness ──
   Widget _buildLockedView() {
     final hasAnswer = _selectedAnswer != null;
     return Center(
@@ -321,8 +383,8 @@ class _PlayerQuestionScreenState extends ConsumerState<PlayerQuestionScreen> {
             if (hasAnswer) ...[
               const SizedBox(height: 16),
               Container(
-                padding:
-                const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 20, vertical: 12),
                 decoration: BoxDecoration(
                   color: Colors.white10,
                   borderRadius: BorderRadius.circular(12),
@@ -350,7 +412,6 @@ class _PlayerQuestionScreenState extends ConsumerState<PlayerQuestionScreen> {
     );
   }
 
-  // ── Options: tap to select (changeable), then Submit ──
   Widget _buildOptionsView(QuestionModel question) {
     final options = question.type == QuestionType.trueFalse
         ? ['True', 'False']
@@ -364,82 +425,94 @@ class _PlayerQuestionScreenState extends ConsumerState<PlayerQuestionScreen> {
     }
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
       child: Column(
-        children: [
-          ...options.asMap().entries.map((e) {
-            final index = e.key;
-            final option = e.value;
-            final isSelected = _selectedAnswer == option;
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: GestureDetector(
-                onTap: () => setState(() => _selectedAnswer = option),
-                child: Container(
-                  height: 48,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: _optionColors[index % _optionColors.length],
-                    borderRadius: BorderRadius.circular(10),
-                    border: isSelected
-                        ? Border.all(color: Colors.white, width: 3)
-                        : null,
+        children: options.asMap().entries.map((e) {
+          final index = e.key;
+          final option = e.value;
+          final isSelected = _selectedAnswer == option;
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: GestureDetector(
+              onTap: () => setState(() => _selectedAnswer = option),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 150),
+                height: 52,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? AppTheme.accent.withOpacity(0.12)
+                      : Colors.white.withOpacity(0.07),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: isSelected
+                        ? AppTheme.accent
+                        : Colors.white.withOpacity(0.15),
+                    width: isSelected ? 2 : 1,
                   ),
-                  padding: const EdgeInsets.symmetric(horizontal: 14),
-                  child: Row(
-                    children: [
-                      Expanded(
+                ),
+                child: Row(
+                  children: [
+                    // Letter badge
+                    Container(
+                      width: 48,
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? AppTheme.accent
+                            : _labelColors[index % _labelColors.length]
+                            .withOpacity(0.25),
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(9),
+                          bottomLeft: Radius.circular(9),
+                        ),
+                      ),
+                      child: Center(
                         child: Text(
-                          option,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
+                          _labels[index % _labels.length],
+                          style: TextStyle(
+                            color: isSelected
+                                ? Colors.black
+                                : _labelColors[
+                            index % _labelColors.length],
                             fontWeight: FontWeight.bold,
+                            fontSize: 16,
                           ),
                         ),
                       ),
-                      if (isSelected)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 3),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(8),
+                    ),
+                    // Option text
+                    Expanded(
+                      child: Padding(
+                        padding:
+                        const EdgeInsets.symmetric(horizontal: 12),
+                        child: Text(
+                          option,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: isSelected
+                                ? AppTheme.accent
+                                : Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
                           ),
-                          child: const Text('✓',
-                              style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold)),
                         ),
-                    ],
-                  ),
+                      ),
+                    ),
+                    // Check icon or spacing
+                    if (isSelected)
+                      const Padding(
+                        padding: EdgeInsets.only(right: 12),
+                        child: Icon(Icons.check_circle_rounded,
+                            color: AppTheme.accent, size: 20),
+                      )
+                    else
+                      const SizedBox(width: 36),
+                  ],
                 ),
               ),
-            );
-          }),
-          const SizedBox(height: 4),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: _selectedAnswer == null ? null : () => _lockIn(),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.accent,
-                foregroundColor: Colors.black,
-                disabledBackgroundColor: Colors.white24,
-                padding: const EdgeInsets.symmetric(vertical: 13),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10)),
-              ),
-              child: Text(
-                _selectedAnswer == null ? 'Select an option' : 'Submit Answer',
-                style: const TextStyle(
-                    fontSize: 15, fontWeight: FontWeight.bold),
-              ),
             ),
-          ),
-        ],
+          );
+        }).toList(),
       ),
     );
   }

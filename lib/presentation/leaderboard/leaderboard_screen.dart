@@ -89,7 +89,13 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
     _saving = true;
     try {
       final sorted = session.players.values.toList()
-        ..sort((a, b) => b.score.compareTo(a.score));
+        ..sort((a, b) {
+          final scoreDiff = b.score.compareTo(a.score);
+          if (scoreDiff != 0) return scoreDiff;
+          // Tiebreaker: lower total response time = answered faster = wins
+          return a.totalResponseTimeMs.compareTo(b.totalResponseTimeMs);
+        });
+
       final result = GameResultModel(
         id: '${session.gamePin}_${DateTime.now().millisecondsSinceEpoch}',
         hostId: session.hostId,

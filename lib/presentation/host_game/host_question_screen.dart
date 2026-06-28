@@ -26,20 +26,24 @@ class _HostQuestionScreenState extends ConsumerState<HostQuestionScreen> {
   int _durationSeconds = 0;
   int _serverOffsetMs = 0;
 
+  StreamSubscription? _offsetSub;
+
   @override
   void initState() {
     super.initState();
-    GameRepository().getServerTimeOffset().then((v) {
-      if (mounted) setState(() => _serverOffsetMs = v);
+    // Stay in sync with server clock continuously
+    _offsetSub = GameRepository().watchServerTimeOffset().listen((offset) {
+      if (mounted) setState(() => _serverOffsetMs = offset);
     });
   }
 
-
   @override
   void dispose() {
+    _offsetSub?.cancel();
     _timer?.cancel();
     super.dispose();
   }
+
 
   void _startTimer(GameSessionModel session, int totalSeconds) {
     _timer?.cancel();
@@ -157,10 +161,14 @@ class _HostQuestionScreenState extends ConsumerState<HostQuestionScreen> {
 
             if (_lastQuestionIndex != session.currentQuestion) {
               _lastQuestionIndex = session.currentQuestion;
-              WidgetsBinding.instance.addPostFrameCallback((_) {
+              // Re-fetch fresh offset for THIS question, then start timer
+              GameRepository().getServerTimeOffset().then((offset) {
+                if (!mounted) return;
+                setState(() => _serverOffsetMs = offset);
                 _startTimer(session, question.timeLimitSeconds);
               });
             }
+
 
             final isLast =
                 session.currentQuestion == quiz.questions.length - 1;

@@ -73,30 +73,37 @@ class GameRepository {
     final updates = <String, dynamic>{
       'currentQuestion': questionIndex,
       'status': GameStatus.question.name,
+      'questionStartAtMs': ServerValue.timestamp, // ← always write this
     };
     if (durationSeconds != null) {
-      updates['questionStartAtMs'] = ServerValue.timestamp;
       updates['questionDurationSeconds'] = durationSeconds;
     }
-
     await _db.ref('game_sessions/$pin').update(updates);
   }
 
 
+
+  // Player: submit answer
   // Player: submit answer
   Future<void> submitAnswer(
       String pin,
       String playerId,
       String questionId,
       String answerId,
-      int points) async {
+      int points,
+      int responseTimeMs) async {
     await _db
         .ref('game_sessions/$pin/players/$playerId/answers/$questionId')
         .set(answerId);
     await _db
         .ref('game_sessions/$pin/players/$playerId/score')
         .set(ServerValue.increment(points));
+    // Always track response time — used as tiebreaker (lower = faster = better)
+    await _db
+        .ref('game_sessions/$pin/players/$playerId/totalResponseTimeMs')
+        .set(ServerValue.increment(responseTimeMs));
   }
+
 
   // End game
   Future<void> endGame(String pin) async {
@@ -168,6 +175,13 @@ class GameRepository {
     final v = snap.value;
     if (v is num) return v.toInt();
     return 0;
+  }
+
+  Stream<int> watchServerTimeOffset() {
+    return _db.ref('.info/serverTimeOffset').onValue.map((event) {
+      final v = event.snapshot.value;
+      return v is num ? v.toInt() : 0;
+    });
   }
 
 

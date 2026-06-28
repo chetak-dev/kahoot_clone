@@ -5,7 +5,6 @@ import '../../core/theme/app_theme.dart';
 import '../../data/services/game_provider.dart';
 import '../../data/services/auth_provider.dart';
 
-
 class JoinGameScreen extends ConsumerStatefulWidget {
   const JoinGameScreen({super.key});
 
@@ -17,6 +16,20 @@ class _JoinGameScreenState extends ConsumerState<JoinGameScreen> {
   final _pinController = TextEditingController();
   final _nameController = TextEditingController();
   bool _isJoining = false;
+  bool _agreedToInstructions = false;
+  bool _showCheckboxError = false;
+
+  // ─────────────────────────────────────────────────────────────────────
+  // EDIT YOUR INSTRUCTIONS HERE
+  // ─────────────────────────────────────────────────────────────────────
+  static const String _instructionsText = '''
+1. Do not close or refresh the browser tab once the quiz has started.
+
+2. Participants with the same score will be ranked based on who submits the answer first.
+
+3. Tapping an option does NOT lock your answer. You must press "Submit Answer" to confirm.
+''';
+  // ─────────────────────────────────────────────────────────────────────
 
   @override
   void dispose() {
@@ -25,14 +38,11 @@ class _JoinGameScreenState extends ConsumerState<JoinGameScreen> {
     super.dispose();
   }
 
-  Future<void> _leaveToHome() async {
-    // Guests are anonymous/disposable — sign out so we return to the
-    // landing ("home") screen instead of the dashboard.
-    final user = ref.read(authNotifierProvider).valueOrNull;
-    if (user?.isGuest ?? false) {
-      await ref.read(authNotifierProvider.notifier).signOut();
-    }
+  void _leaveToHome() {
+    // Navigate first — before any auth state change fires go_router's redirect
     if (mounted) context.go('/login');
+    // Sign out in background (guest session, no need to await)
+    ref.read(authNotifierProvider.notifier).signOut().ignore();
   }
 
 
@@ -49,6 +59,10 @@ class _JoinGameScreenState extends ConsumerState<JoinGameScreen> {
       );
       return;
     }
+    if (!_agreedToInstructions) {
+      setState(() => _showCheckboxError = true);
+      return;
+    }
 
     setState(() => _isJoining = true);
 
@@ -57,9 +71,7 @@ class _JoinGameScreenState extends ConsumerState<JoinGameScreen> {
         _pinController.text.trim(),
         _nameController.text.trim(),
       );
-
       if (!mounted) return;
-
       if (success) {
         context.go('/player-lobby/${_pinController.text.trim()}');
       } else {
@@ -71,9 +83,8 @@ class _JoinGameScreenState extends ConsumerState<JoinGameScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error: $e'),
-          backgroundColor: Colors.redAccent,
-        ),
+            content: Text('Error: $e'),
+            backgroundColor: Colors.redAccent),
       );
     } finally {
       if (mounted) setState(() => _isJoining = false);
@@ -98,128 +109,217 @@ class _JoinGameScreenState extends ConsumerState<JoinGameScreen> {
             icon: const Icon(Icons.arrow_back, color: Colors.white),
             onPressed: _leaveToHome,
           ),
-
           title: const Text('Join Live Quiz',
-              style:
-              TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              style: TextStyle(
+                  color: Colors.white, fontWeight: FontWeight.bold)),
         ),
         body: SafeArea(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              // Scale down on short screens so fields never crowd each other.
-              final bool isCompact = constraints.maxHeight < 600;
-              final double iconSize = isCompact ? 48 : 80;
-              final double titleSize = isCompact ? 20 : 24;
-              final double pinFontSize = isCompact ? 26 : 32;
-              final double gap = isCompact ? 16 : 28;
+          child: SingleChildScrollView(
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 420),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
 
-              return SingleChildScrollView(
-                child: ConstrainedBox(
-                  constraints:
-                  BoxConstraints(minHeight: constraints.maxHeight),
-                  child: Center(
-                    child: ConstrainedBox(
-                      // Caps width on tablets / web so it doesn't stretch.
-                      constraints: const BoxConstraints(maxWidth: 420),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 24, vertical: 24),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Icon(Icons.gamepad_rounded,
-                                size: iconSize, color: Colors.white),
-                            SizedBox(height: gap),
-                            Text(
-                              'Enter Quiz Code',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: titleSize,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                            SizedBox(height: gap),
-                            TextField(
-                              controller: _pinController,
-                              keyboardType: TextInputType.number,
-                              maxLength: 6,
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: pinFontSize,
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: 8),
-                              decoration: InputDecoration(
-                                counterText: '',
-                                hintText: '000000',
-                                hintStyle:
-                                const TextStyle(color: Colors.white24),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide:
-                                  const BorderSide(color: Colors.white30),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide:
-                                  const BorderSide(color: AppTheme.accent),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            TextField(
-                              controller: _nameController,
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                  color: Colors.white, fontSize: 18),
-                              decoration: InputDecoration(
-                                hintText: 'Your Nickname',
-                                hintStyle:
-                                const TextStyle(color: Colors.white38),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide:
-                                  const BorderSide(color: Colors.white30),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide:
-                                  const BorderSide(color: AppTheme.accent),
-                                ),
-                              ),
-                            ),
-                            SizedBox(height: gap),
-                            ElevatedButton(
-                              onPressed: _isJoining ? null : _joinGame,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppTheme.accent,
-                                foregroundColor: Colors.black,
-                                padding:
-                                const EdgeInsets.symmetric(vertical: 18),
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12)),
-                              ),
-                              child: _isJoining
-                                  ? const SizedBox(
-                                height: 24,
-                                width: 24,
-                                child: CircularProgressIndicator(
-                                    color: Colors.black, strokeWidth: 2),
-                              )
-                                  : const Text('Join Now!',
-                                  style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold)),
-                            ),
-                          ],
+                    // ── Instructions card — flush to top, compact ────────
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.07),
+                        border: Border(
+                          bottom: BorderSide(
+                              color: Colors.white.withOpacity(0.2)),
                         ),
                       ),
+                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: const [
+                              Icon(Icons.info_outline,
+                                  color: AppTheme.accent, size: 15),
+                              SizedBox(width: 6),
+                              Text(
+                                'Instructions',
+                                style: TextStyle(
+                                  color: AppTheme.accent,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            _instructionsText,
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.85),
+                              fontSize: 12,
+                              height: 1.7,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
+
+                    // ── Form ─────────────────────────────────────────────
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24, vertical: 16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+
+                          // Enter Quiz Code heading
+                          const Text(
+                            'Enter Quiz Code',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+
+                          const SizedBox(height: 16),
+
+                          // ── PIN field — same height as nickname ───────
+                          TextField(
+                            controller: _pinController,
+                            keyboardType: TextInputType.number,
+                            maxLength: 6,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,       // ← matches nickname
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 10,  // spacing keeps it readable
+                            ),
+                            decoration: InputDecoration(
+                              counterText: '',
+                              hintText: '0  0  0  0  0  0',
+                              hintStyle:
+                              const TextStyle(color: Colors.white24),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide:
+                                const BorderSide(color: Colors.white30),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide:
+                                const BorderSide(color: AppTheme.accent),
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(height: 12),
+
+                          // ── Nickname field ────────────────────────────
+                          TextField(
+                            controller: _nameController,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                                color: Colors.white, fontSize: 18),
+                            onSubmitted: (_) => _joinGame(),
+                            decoration: InputDecoration(
+                              hintText: 'Your Nickname',
+                              hintStyle:
+                              const TextStyle(color: Colors.white38),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide:
+                                const BorderSide(color: Colors.white30),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide:
+                                const BorderSide(color: AppTheme.accent),
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(height: 4),
+
+                          // ── Mandatory checkbox ────────────────────────
+                          Theme(
+                            data: Theme.of(context).copyWith(
+                              unselectedWidgetColor: Colors.white38,
+                            ),
+                            child: CheckboxListTile(
+                              value: _agreedToInstructions,
+                              onChanged: (v) => setState(() {
+                                _agreedToInstructions = v ?? false;
+                                if (_agreedToInstructions) {
+                                  _showCheckboxError = false;
+                                }
+                              }),
+                              activeColor: AppTheme.accent,
+                              checkColor: Colors.black,
+                              controlAffinity:
+                              ListTileControlAffinity.leading,
+                              contentPadding: EdgeInsets.zero,
+                              title: const Text(
+                                'I have read the above instructions',
+                                style: TextStyle(
+                                    color: Colors.white, fontSize: 13),
+                              ),
+                            ),
+                          ),
+
+                          // ── Error message just above button ───────────
+                          if (_showCheckboxError)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 8),
+                              child: Row(
+                                children: const [
+                                  Icon(Icons.error_outline,
+                                      color: Colors.redAccent, size: 14),
+                                  SizedBox(width: 6),
+                                  Text(
+                                    'Please accept the instructions to proceed',
+                                    style: TextStyle(
+                                        color: Colors.redAccent,
+                                        fontSize: 12),
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                          SizedBox(height: _showCheckboxError ? 4 : 16),
+
+                          // ── Join button — always yellow ───────────────
+                          ElevatedButton(
+                            onPressed: _isJoining ? null : _joinGame,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppTheme.accent,
+                              foregroundColor: Colors.black,
+                              padding:
+                              const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12)),
+                            ),
+                            child: _isJoining
+                                ? const SizedBox(
+                              height: 24,
+                              width: 24,
+                              child: CircularProgressIndicator(
+                                  color: Colors.black, strokeWidth: 2),
+                            )
+                                : const Text('Join Now!',
+                                style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold)),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-              );
-            },
+              ),
+            ),
           ),
         ),
       ),

@@ -77,12 +77,16 @@ class GameNotifier extends AsyncNotifier<void> {
   }
 
   // Player: submit answer
+  // Player: submit answer
   Future<void> submitAnswer(
-      String pin, String questionId, String answerId, int points) async {
+      String pin, String questionId, String answerId, int points,
+      int responseTimeMs) async {
     final user = await ref.read(authNotifierProvider.future);
     if (user == null) throw Exception('Not logged in');
-    await _repo.submitAnswer(pin, user.uid, questionId, answerId, points);
+    await _repo.submitAnswer(
+        pin, user.uid, questionId, answerId, points, responseTimeMs);
   }
+
 
   // Host: start the 10-second countdown
   Future<void> startCountdown(String pin) async {

@@ -26,6 +26,8 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/images/logo.png
   # add asset folders only if you actually have them:
   # assets:
   #   - assets/images/
