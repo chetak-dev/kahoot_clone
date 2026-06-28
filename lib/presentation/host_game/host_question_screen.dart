@@ -245,15 +245,8 @@ class _HostQuestionScreenState extends ConsumerState<HostQuestionScreen> {
                             ),
                             const SizedBox(height: 16),
 
-                            GridView.count(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              crossAxisCount: 2,
-                              crossAxisSpacing: 8,
-                              mainAxisSpacing: 8,
-                              childAspectRatio: 3,
-                              children:
-                              question.options.asMap().entries.map((e) {
+                            Column(
+                              children: question.options.asMap().entries.map((e) {
                                 final colors = [
                                   Colors.red,
                                   Colors.blue,
@@ -261,29 +254,36 @@ class _HostQuestionScreenState extends ConsumerState<HostQuestionScreen> {
                                   Colors.green,
                                 ];
                                 final isCorrect =
-                                question.correctAnswers.contains(e.value);
-                                return Container(
-                                  decoration: BoxDecoration(
-                                    color: _timerDone && isCorrect
-                                        ? AppTheme.correct
-                                        : colors[e.key % colors.length]
-                                        .withOpacity(
-                                        _timerDone && !isCorrect
-                                            ? 0.3
-                                            : 1.0),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Center(
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(8),
-                                      child: Text(
-                                        e.value,
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(
-                                          color: _timerDone && !isCorrect
-                                              ? Colors.white38
-                                              : Colors.white,
-                                          fontWeight: FontWeight.bold,
+                                    question.correctAnswers.contains(e.value);
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: 8),
+                                  child: Container(
+                                    height: 56,
+                                    width: double.infinity,
+                                    decoration: BoxDecoration(
+                                      color: _timerDone && isCorrect
+                                          ? AppTheme.correct
+                                          : colors[e.key % colors.length]
+                                              .withOpacity(
+                                                  _timerDone && !isCorrect
+                                                      ? 0.3
+                                                      : 1.0),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Center(
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 16),
+                                        child: Text(
+                                          e.value,
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                            color: _timerDone && !isCorrect
+                                                ? Colors.white38
+                                                : Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                          ),
                                         ),
                                       ),
                                     ),

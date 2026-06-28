@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/theme/app_theme.dart';
 import '../../data/services/game_provider.dart';
 import '../../core/utils/nav_helpers.dart';
-import '../../core/utils/nav_helpers.dart';
+import '../../data/services/auth_provider.dart';
 
 
 class ResultsScreen extends ConsumerWidget {
@@ -14,6 +14,7 @@ class ResultsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final gameAsync = ref.watch(gameSessionProvider(pin));
+    final isHost = ref.watch(authNotifierProvider).valueOrNull?.isHost ?? false;
 
     return gameAsync.when(
       loading: () => const Scaffold(
@@ -142,25 +143,29 @@ class ResultsScreen extends ConsumerWidget {
 
                   Row(
                     children: [
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: () => context.go('/review/$pin'),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: Colors.white,
-                            side: const BorderSide(color: Colors.white38),
-                            padding: const EdgeInsets.symmetric(vertical: 16),
+                      if (!isHost) ...[
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () => context.go('/review/$pin'),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: Colors.white,
+                              side: const BorderSide(color: Colors.white38),
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 16),
+                            ),
+                            child: const Text('Review answers'),
                           ),
-                          child: const Text('Review answers'),
                         ),
-                      ),
-                      const SizedBox(width: 12),
+                        const SizedBox(width: 12),
+                      ],
                       Expanded(
                         child: ElevatedButton(
                           onPressed: () => goHome(context, ref),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppTheme.accent,
                             foregroundColor: Colors.black,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            padding:
+                                const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12)),
                           ),
