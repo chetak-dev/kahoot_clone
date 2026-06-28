@@ -234,7 +234,7 @@ class _PlayerQuestionScreenState extends ConsumerState<PlayerQuestionScreen> {
                         minHeight: 8,
                       ),
                       Padding(
-                        padding: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
                         child: Column(
                           children: [
                             Row(
@@ -262,20 +262,21 @@ class _PlayerQuestionScreenState extends ConsumerState<PlayerQuestionScreen> {
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: 10),
                             Container(
                               width: double.infinity,
-                              padding: const EdgeInsets.all(20),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 12),
                               decoration: BoxDecoration(
                                 color: Colors.white10,
-                                borderRadius: BorderRadius.circular(16),
+                                borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
                                 question.question,
                                 textAlign: TextAlign.center,
                                 style: const TextStyle(
                                     color: Colors.white,
-                                    fontSize: 20,
+                                    fontSize: 17,
                                     fontWeight: FontWeight.bold),
                               ),
                             ),
@@ -362,9 +363,9 @@ class _PlayerQuestionScreenState extends ConsumerState<PlayerQuestionScreen> {
       );
     }
 
-    // Fixed-height tiles — never stretches on large screens, scrolls on tiny ones
+    // Fixed-height tiles — compact and professional
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
       child: Column(
         children: [
           ...options.asMap().entries.map((e) {
@@ -372,20 +373,20 @@ class _PlayerQuestionScreenState extends ConsumerState<PlayerQuestionScreen> {
             final option = e.value;
             final isSelected = _selectedAnswer == option;
             return Padding(
-              padding: const EdgeInsets.only(bottom: 10),
+              padding: const EdgeInsets.only(bottom: 8),
               child: GestureDetector(
                 onTap: () => setState(() => _selectedAnswer = option),
                 child: Container(
-                  height: 64,
+                  height: 48,
                   width: double.infinity,
                   decoration: BoxDecoration(
                     color: _optionColors[index % _optionColors.length],
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(10),
                     border: isSelected
-                        ? Border.all(color: Colors.white, width: 4)
+                        ? Border.all(color: Colors.white, width: 3)
                         : null,
                   ),
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
                   child: Row(
                     children: [
                       Expanded(
@@ -394,7 +395,7 @@ class _PlayerQuestionScreenState extends ConsumerState<PlayerQuestionScreen> {
                           textAlign: TextAlign.center,
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 16,
+                            fontSize: 14,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -402,15 +403,15 @@ class _PlayerQuestionScreenState extends ConsumerState<PlayerQuestionScreen> {
                       if (isSelected)
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 4),
+                              horizontal: 8, vertical: 3),
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(8),
                           ),
                           child: const Text('✓',
                               style: TextStyle(
                                   color: Colors.black,
-                                  fontSize: 14,
+                                  fontSize: 12,
                                   fontWeight: FontWeight.bold)),
                         ),
                     ],
@@ -428,13 +429,13 @@ class _PlayerQuestionScreenState extends ConsumerState<PlayerQuestionScreen> {
                 backgroundColor: AppTheme.accent,
                 foregroundColor: Colors.black,
                 disabledBackgroundColor: Colors.white24,
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                padding: const EdgeInsets.symmetric(vertical: 13),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
+                    borderRadius: BorderRadius.circular(10)),
               ),
               child: Text(
                 _selectedAnswer == null ? 'Select an option' : 'Submit Answer',
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
               ),
             ),
           ),
