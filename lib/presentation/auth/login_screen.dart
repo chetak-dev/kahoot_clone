@@ -37,130 +37,143 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     return Scaffold(
       backgroundColor: AppTheme.background,
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 40),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const SizedBox(height: 48),
-              const Icon(Icons.quiz_rounded, size: 84, color: AppTheme.accent),
-              const SizedBox(height: 16),
-              const Text(
-                'QuizLive',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 34,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Play live quizzes in real time',
-                style: TextStyle(color: Colors.white.withOpacity(0.5)),
-              ),
-              const SizedBox(height: 64),
+        child: Column(
+          children: [
+            // ── Scrollable main content ──────────────────────────────────
+            Expanded(
+              child: SingleChildScrollView(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 28, vertical: 40),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    const SizedBox(height: 48),
+                    const Icon(Icons.quiz_rounded,
+                        size: 84, color: AppTheme.accent),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'QuizLive',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 34,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Play live quizzes in real time',
+                      style:
+                          TextStyle(color: Colors.white.withOpacity(0.5)),
+                    ),
+                    const SizedBox(height: 64),
 
-              if (_error != null) ...[
-                Container(
-                  width: double.infinity,
-                  padding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: Colors.redAccent.withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.redAccent.withOpacity(0.5)),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.error_outline,
-                          color: Colors.redAccent, size: 18),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          _error!,
+                    if (_error != null) ...[
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: Colors.redAccent.withOpacity(0.12),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                              color: Colors.redAccent.withOpacity(0.5)),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.error_outline,
+                                color: Colors.redAccent, size: 18),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                _error!,
+                                style: const TextStyle(
+                                    color: Colors.redAccent, fontSize: 13),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+
+                    // ── Primary action: Join a Game ──────────────────────
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: _isLoading ? null : _joinAsGuest,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.accent,
+                          foregroundColor: Colors.black,
+                          minimumSize: const Size(double.infinity, 58),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        icon: _isLoading
+                            ? const SizedBox(
+                                height: 22,
+                                width: 22,
+                                child: CircularProgressIndicator(
+                                  color: Colors.black,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Icon(Icons.gamepad_rounded),
+                        label: Text(
+                          _isLoading ? 'Joining...' : 'Join a Game',
                           style: const TextStyle(
-                              color: Colors.redAccent, fontSize: 13),
+                              fontWeight: FontWeight.bold, fontSize: 17),
                         ),
                       ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-              ],
-
-              // ── Primary action: Join a Game ──────────────────────────────
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: _isLoading ? null : _joinAsGuest,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.accent,
-                    foregroundColor: Colors.black,
-                    minimumSize: const Size(double.infinity, 58),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
                     ),
-                  ),
-                  icon: _isLoading
-                      ? const SizedBox(
-                    height: 22,
-                    width: 22,
-                    child: CircularProgressIndicator(
-                      color: Colors.black,
-                      strokeWidth: 2,
-                    ),
-                  )
-                      : const Icon(Icons.gamepad_rounded),
-                  label: Text(
-                    _isLoading ? 'Joining...' : 'Join a Game',
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 17),
-                  ),
-                ),
-              ),
 
-              const SizedBox(height: 24),
+                    const SizedBox(height: 24),
 
-              // ── Secondary: small host sign-in link ───────────────────────
-              TextButton(
-                onPressed:
-                _isLoading ? null : () => context.push('/host-login'),
-                style: TextButton.styleFrom(
-                  foregroundColor: Colors.white.withOpacity(0.6),
-                ),
-                child: const Text.rich(
-                  TextSpan(
-                    text: 'Are you a host? ',
-                    children: [
-                      TextSpan(
-                        text: 'Sign in',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
+                    // ── Secondary: small host sign-in link ───────────────
+                    TextButton(
+                      onPressed: _isLoading
+                          ? null
+                          : () => context.push('/host-login'),
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.white.withOpacity(0.6),
+                      ),
+                      child: const Text.rich(
+                        TextSpan(
+                          text: 'Are you a host? ',
+                          children: [
+                            TextSpan(
+                              text: 'Sign in',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ],
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
+            ),
 
-              const SizedBox(height: 200),
-              // ── Footer credit ────────────────────────────────────────────
-              Row(
+            // ── Footer — always visible, never needs scrolling ───────────
+            Padding(
+              padding: const EdgeInsets.only(bottom: 20),
+              child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text('Made with ',
                       style: TextStyle(
-                          color: Colors.white.withOpacity(0.7), fontSize: 16)),
-                  const Icon(Icons.favorite, color: Colors.redAccent, size: 17),
+                          color: Colors.white.withOpacity(0.7),
+                          fontSize: 14)),
+                  const Icon(Icons.favorite,
+                      color: Colors.redAccent, size: 15),
                   Text(' by VOGI Team',
                       style: TextStyle(
-                          color: Colors.white.withOpacity(0.7), fontSize: 16)),
+                          color: Colors.white.withOpacity(0.7),
+                          fontSize: 14)),
                 ],
               ),
-
-            ],
-
-          ),
+            ),
+          ],
         ),
       ),
     );

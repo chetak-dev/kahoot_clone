@@ -366,57 +366,57 @@ class _PlayerQuestionScreenState extends ConsumerState<PlayerQuestionScreen> {
       children: [
         Expanded(
           child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: GridView.count(
-              crossAxisCount: 2,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+            child: Column(
               children: options.asMap().entries.map((e) {
                 final index = e.key;
                 final option = e.value;
                 final isSelected = _selectedAnswer == option;
-                return GestureDetector(
-                  onTap: () => setState(() => _selectedAnswer = option),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: _optionColors[index % _optionColors.length],
-                      borderRadius: BorderRadius.circular(16),
-                      border: isSelected
-                          ? Border.all(color: Colors.white, width: 4)
-                          : null,
-                    ),
-                    child: Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(10),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              option,
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            if (isSelected) ...[
-                              const SizedBox(height: 8),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 10, vertical: 3),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(12),
+                return Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: GestureDetector(
+                      onTap: () => setState(() => _selectedAnswer = option),
+                      child: Container(
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: _optionColors[index % _optionColors.length],
+                          borderRadius: BorderRadius.circular(16),
+                          border: isSelected
+                              ? Border.all(color: Colors.white, width: 4)
+                              : null,
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  option,
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                                child: const Text('Selected ✓',
-                                    style: TextStyle(
-                                        color: Colors.black,
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold)),
                               ),
+                              if (isSelected)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: const Text('✓',
+                                      style: TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold)),
+                                ),
                             ],
-                          ],
+                          ),
                         ),
                       ),
                     ),
