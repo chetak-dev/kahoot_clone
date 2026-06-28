@@ -47,13 +47,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Image.asset('assets/images/logo.png', height: 250),
+                    Image.asset('assets/images/logo.png', height: 150),
                         const SizedBox(height: 16),
                     const SizedBox(height: 58),
                     Text(
                       'Get Ready for a Multiplayer Live Quiz Game',
                       style:
-                          TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 18),
+                          TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 15),
                     ),
                     const SizedBox(height: 24),
 
