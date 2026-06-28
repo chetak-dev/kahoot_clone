@@ -362,73 +362,65 @@ class _PlayerQuestionScreenState extends ConsumerState<PlayerQuestionScreen> {
       );
     }
 
-    return Column(
-      children: [
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-            child: Column(
-              children: options.asMap().entries.map((e) {
-                final index = e.key;
-                final option = e.value;
-                final isSelected = _selectedAnswer == option;
-                return Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: GestureDetector(
-                      onTap: () => setState(() => _selectedAnswer = option),
-                      child: Container(
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          color: _optionColors[index % _optionColors.length],
-                          borderRadius: BorderRadius.circular(16),
-                          border: isSelected
-                              ? Border.all(color: Colors.white, width: 4)
-                              : null,
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  option,
-                                  textAlign: TextAlign.center,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                              if (isSelected)
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 10, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: const Text('✓',
-                                      style: TextStyle(
-                                          color: Colors.black,
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.bold)),
-                                ),
-                            ],
+    // Fixed-height tiles — never stretches on large screens, scrolls on tiny ones
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+      child: Column(
+        children: [
+          ...options.asMap().entries.map((e) {
+            final index = e.key;
+            final option = e.value;
+            final isSelected = _selectedAnswer == option;
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: GestureDetector(
+                onTap: () => setState(() => _selectedAnswer = option),
+                child: Container(
+                  height: 64,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: _optionColors[index % _optionColors.length],
+                    borderRadius: BorderRadius.circular(16),
+                    border: isSelected
+                        ? Border.all(color: Colors.white, width: 4)
+                        : null,
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          option,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
-                    ),
+                      if (isSelected)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Text('✓',
+                              style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold)),
+                        ),
+                    ],
                   ),
-                );
-              }).toList(),
-            ),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-          child: SizedBox(
+                ),
+              ),
+            );
+          }),
+          const SizedBox(height: 4),
+          SizedBox(
             width: double.infinity,
             child: ElevatedButton(
               onPressed: _selectedAnswer == null ? null : () => _lockIn(),
@@ -441,16 +433,13 @@ class _PlayerQuestionScreenState extends ConsumerState<PlayerQuestionScreen> {
                     borderRadius: BorderRadius.circular(12)),
               ),
               child: Text(
-                _selectedAnswer == null
-                    ? 'Select an option'
-                    : 'Submit Answer',
-                style: const TextStyle(
-                    fontSize: 16, fontWeight: FontWeight.bold),
+                _selectedAnswer == null ? 'Select an option' : 'Submit Answer',
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
