@@ -6,6 +6,7 @@ import '../../data/models/quiz_model.dart';
 import '../../data/repositories/quiz_repository.dart';
 import '../../data/services/auth_provider.dart';
 import '../../data/services/quiz_provider.dart';
+import '../../core/widgets/gradient_button.dart';
 
 class MyQuizzesScreen extends ConsumerWidget {
   /// True when shown as its own route (e.g. from "Host a Game"), false when
@@ -40,11 +41,13 @@ class MyQuizzesScreen extends ConsumerWidget {
             style: TextStyle(
                 color: Colors.white, fontWeight: FontWeight.bold)),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.add, color: Colors.white),
-            tooltip: 'Create quiz',
+          // empty-state "Create Your First Quiz"
+          GradientButton(
             onPressed: () => context.go('/create-quiz'),
+            icon: Icons.add,
+            child: const Text('Create Your First Quiz', style: TextStyle(fontWeight: FontWeight.bold)),
           ),
+
         ],
       ),
       body: quizzesAsync.when(
@@ -171,20 +174,15 @@ class _QuizCard extends ConsumerWidget {
             child: Row(
               children: [
                 Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: quiz.questions.isEmpty
-                        ? null
-                        : () => context.go('/host-game', extra: quiz),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.accent,
-                      foregroundColor: Colors.black,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8)),
-                    ),
-                    icon: const Icon(Icons.play_arrow),
-                    label: const Text('Host',
-                        style: TextStyle(fontWeight: FontWeight.bold)),
+                  child: // the "Host" button (inside Expanded)
+                  GradientButton(
+                    onPressed: quiz.questions.isEmpty ? null : () => context.go('/host-game', extra: quiz),
+                    icon: Icons.play_arrow,
+                    verticalPadding: 12,
+                    borderRadius: 8,
+                    child: const Text('Host', style: TextStyle(fontWeight: FontWeight.bold)),
                   ),
+
                 ),
                 const SizedBox(width: 8),
                 IconButton(

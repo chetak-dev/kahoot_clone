@@ -8,6 +8,8 @@ import '../../data/models/game_session_model.dart';
 import '../../data/models/quiz_model.dart';
 import '../../data/services/game_provider.dart';
 import '../game_play/countdown_view.dart';
+import '../../core/widgets/gradient_button.dart';
+
 
 class HostGameScreen extends ConsumerStatefulWidget {
   final QuizModel quiz;
@@ -323,19 +325,12 @@ class _HostGameScreenState extends ConsumerState<HostGameScreen> {
                 // Start button
                 SizedBox(
                   width: double.infinity,
-                  child: ElevatedButton(
+                  child: GradientButton(
                     onPressed: _startGame,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.accent,
-                      foregroundColor: Colors.black,
-                      padding: const EdgeInsets.symmetric(vertical: 18),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
-                    ),
-                    child: const Text('Start Game',
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold)),
+                    verticalPadding: 18,
+                    child: const Text('Start Game', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   ),
+
                 ),
               ],
             ),

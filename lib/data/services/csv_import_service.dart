@@ -11,11 +11,14 @@ import 'file_saver_io.dart' if (dart.library.html) 'file_saver_web.dart';
 
 class CsvImportService {
   // ── Sample CSV ───────────────────────────────────────────────────────────────
+  // Column order: type, time_limit, points, then the question content.
+  // Points are numeric (10 / 100 / 1000).
   static const String sampleCsvContent =
-  '''question,type,option_a,option_b,option_c,option_d,correct_answers,time_limit,points
-What is the capital of France?,mcq,Paris,London,Berlin,Madrid,A,30,standard
-Is the Earth flat?,truefalse,,,,,False,20,standard
-Which planet is known as the Red Planet?,mcq,Venus,Mars,Jupiter,Saturn,B,30,standard''';
+  '''type,time_limit,points,question,option_a,option_b,option_c,option_d,correct_answers
+mcq,30,1000,What is the capital of France?,Paris,London,Berlin,Madrid,A
+truefalse,20,100,Is the Earth flat?,,,,,False
+mcq,15,10,Which planet is known as the Red Planet?,Venus,Mars,Jupiter,Saturn,B''';
+
 
   /// Opens Android's "Save As" dialog (Storage Access Framework) so the user
   /// picks the location, then writes the sample CSV there.
@@ -184,15 +187,20 @@ Which planet is known as the Red Planet?,mcq,Venus,Mars,Jupiter,Saturn,B,30,stan
     }
   }
 
-  static PointsType _parsePoints(String raw) {
+  static int _parsePoints(String raw) {
+    // New numeric format (10 / 100 / 1000).
+    final n = int.tryParse(raw.trim());
+    if (n != null) return n;
+    // Backward compatibility with the old enum names.
     switch (raw.toLowerCase()) {
       case 'double':
-        return PointsType.double;
+        return 2000;
       case 'none':
-        return PointsType.none;
+        return 0;
       case 'standard':
       default:
-        return PointsType.standard;
+        return 1000;
     }
   }
+
 }

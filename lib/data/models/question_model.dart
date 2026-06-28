@@ -2,8 +2,6 @@
 
 enum QuestionType { mcq, trueFalse }
 
-enum PointsType { none, standard, double }
-
 class QuestionModel {
   final String id;
   final String question;
@@ -11,7 +9,7 @@ class QuestionModel {
   final List<String> options;
   final List<String> correctAnswers;
   final int timeLimitSeconds;
-  final PointsType points;
+  final int points;
   final String? imageUrl;
   final String? videoUrl;
 
@@ -22,7 +20,7 @@ class QuestionModel {
     this.options = const [],
     this.correctAnswers = const [],
     this.timeLimitSeconds = 30,
-    this.points = PointsType.standard,
+    this.points = 1000,
     this.imageUrl,
     this.videoUrl,
   });
@@ -36,7 +34,7 @@ class QuestionModel {
     List<String>? options,
     List<String>? correctAnswers,
     int? timeLimitSeconds,
-    PointsType? points,
+    int? points,
     String? imageUrl,
     String? videoUrl,
   }) {
@@ -64,10 +62,7 @@ class QuestionModel {
       options: List<String>.from(map['options'] ?? []),
       correctAnswers: List<String>.from(map['correctAnswers'] ?? []),
       timeLimitSeconds: map['timeLimitSeconds'] ?? 30,
-      points: PointsType.values.firstWhere(
-            (p) => p.name == map['points'],
-        orElse: () => PointsType.standard,
-      ),
+      points: _parsePointsValue(map['points']),
       imageUrl: map['imageUrl'],
       videoUrl: map['videoUrl'],
     );
@@ -81,9 +76,32 @@ class QuestionModel {
       'options': options,
       'correctAnswers': correctAnswers,
       'timeLimitSeconds': timeLimitSeconds,
-      'points': points.name,
+      'points': points,
       'imageUrl': imageUrl,
       'videoUrl': videoUrl,
     };
   }
+}
+
+/// Parses a stored `points` value into an int.
+///
+/// Supports the new numeric format (10/100/1000) and is backward compatible
+/// with the legacy enum names that older quizzes saved
+/// (none -> 0, standard -> 1000, double -> 2000).
+int _parsePointsValue(dynamic raw) {
+  if (raw is int) return raw;
+  if (raw is num) return raw.toInt();
+  if (raw is String) {
+    final n = int.tryParse(raw.trim());
+    if (n != null) return n;
+    switch (raw.toLowerCase()) {
+      case 'none':
+        return 0;
+      case 'double':
+        return 2000;
+      case 'standard':
+        return 1000;
+    }
+  }
+  return 1000;
 }

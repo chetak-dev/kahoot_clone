@@ -6,6 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/app_theme.dart';
 import '../../data/services/auth_provider.dart';
+import '../../core/widgets/gradient_button.dart';
+
 
 class HostLoginScreen extends ConsumerStatefulWidget {
   const HostLoginScreen({super.key});
@@ -180,31 +182,13 @@ class _HostLoginScreenState extends ConsumerState<HostLoginScreen> {
 
               SizedBox(
                 width: double.infinity,
-                child: ElevatedButton(
+                child: GradientButton(
                   onPressed: _isLoading ? null : _signIn,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.accent,
-                    foregroundColor: Colors.black,
-                    minimumSize: const Size(double.infinity, 52),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
                   child: _isLoading
-                      ? const SizedBox(
-                    height: 22,
-                    width: 22,
-                    child: CircularProgressIndicator(
-                      color: Colors.black,
-                      strokeWidth: 2,
-                    ),
-                  )
-                      : const Text(
-                    'Sign In',
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 16),
-                  ),
+                      ? const SizedBox(height: 22, width: 22, child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2))
+                      : const Text('Sign In', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                 ),
+
               ),
             ],
           ),

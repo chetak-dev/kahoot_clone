@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/nav_helpers.dart';
+import '../../core/widgets/gradient_button.dart';
 import '../../data/models/game_session_model.dart';
 import '../../data/models/question_model.dart';
 import '../../data/models/quiz_model.dart';
@@ -31,6 +32,7 @@ class _PlayerQuestionScreenState extends ConsumerState<PlayerQuestionScreen> {
   int _lastQuestionIndex = -1;
   QuestionModel? _currentQuestion;
   int? _startAtMs;
+  int? _localStartMs; // wall-clock fallback if the server timestamp is missing
   int _durationSeconds = 0;
   int _serverOffsetMs = 0;
 
@@ -61,24 +63,16 @@ class _PlayerQuestionScreenState extends ConsumerState<PlayerQuestionScreen> {
     super.dispose();
   }
 
-
-
-  int _pointsValue(PointsType points) {
-    switch (points) {
-      case PointsType.none:
-        return 0;
-      case PointsType.standard:
-        return 1000;
-      case PointsType.double:
-        return 2000;
-    }
-  }
-
   int _computeRemaining() {
-    if (_startAtMs == null) return _durationSeconds;
-    final serverNow = DateTime.now().millisecondsSinceEpoch + _serverOffsetMs;
-    final endsAtMs = _startAtMs! + _durationSeconds * 1000;
-    return ((endsAtMs - serverNow) / 1000).ceil().clamp(0, 999);
+    // Prefer the server-synced start; fall back to a local start so the
+    // countdown can never stall (which would freeze the whole game).
+    final startMs = _startAtMs ?? _localStartMs;
+    if (startMs == null) return _durationSeconds;
+    // Only correct for server-clock drift when using the server timestamp.
+    final now = DateTime.now().millisecondsSinceEpoch +
+        (_startAtMs != null ? _serverOffsetMs : 0);
+    final endsAtMs = startMs + _durationSeconds * 1000;
+    return ((endsAtMs - now) / 1000).ceil().clamp(0, 999);
   }
 
   void _startTimer(
@@ -87,6 +81,7 @@ class _PlayerQuestionScreenState extends ConsumerState<PlayerQuestionScreen> {
     _fallbackTimer?.cancel();
     _currentQuestion = question;
     _startAtMs = session.questionStartAtMs;
+    _localStartMs = DateTime.now().millisecondsSinceEpoch;
     _durationSeconds =
         session.questionDurationSeconds ?? question.timeLimitSeconds;
     setState(() {
@@ -140,7 +135,7 @@ class _PlayerQuestionScreenState extends ConsumerState<PlayerQuestionScreen> {
     final isCorrect = question.correctAnswers
         .map((a) => a.toLowerCase())
         .contains(answer.toLowerCase());
-    final earned = isCorrect ? _pointsValue(question.points) : 0;
+    final earned = isCorrect ? question.points : 0;
 
     await ref.read(gameNotifierProvider.notifier).submitAnswer(
       widget.pin,
@@ -233,14 +228,16 @@ class _PlayerQuestionScreenState extends ConsumerState<PlayerQuestionScreen> {
               if (_lastQuestionIndex != session.currentQuestion) {
                 _lastQuestionIndex = session.currentQuestion;
                 final qIndex = session.currentQuestion;
-                // Re-fetch fresh offset for THIS question, then start timer
-                GameRepository().getServerTimeOffset().then((offset) {
+                // Start the countdown right away. The server-clock offset is
+                // kept current by the watchServerTimeOffset() listener set up
+                // in initState; blocking on a one-off fetch can hang on the
+                // synthetic .info node and freeze the timer. Defer to after
+                // this frame since _startTimer calls setState.
+                WidgetsBinding.instance.addPostFrameCallback((_) {
                   if (!mounted) return;
-                  setState(() => _serverOffsetMs = offset);
                   _startTimer(session, question, qIndex);
                 });
               }
-
 
               return Scaffold(
                 backgroundColor: AppTheme.background,
@@ -323,31 +320,19 @@ class _PlayerQuestionScreenState extends ConsumerState<PlayerQuestionScreen> {
                         Padding(
                           padding:
                           const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                          child: SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              onPressed: _selectedAnswer == null
-                                  ? null
-                                  : () => _lockIn(),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppTheme.accent,
-                                foregroundColor: Colors.black,
-                                disabledBackgroundColor:
-                                Colors.white.withOpacity(0.1),
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: 14),
-                                shape: RoundedRectangleBorder(
-                                    borderRadius:
-                                    BorderRadius.circular(10)),
-                              ),
-                              child: Text(
-                                _selectedAnswer == null
-                                    ? 'Select an option'
-                                    : 'Submit Answer',
-                                style: const TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.bold),
-                              ),
+                          child: GradientButton(
+                            onPressed: _selectedAnswer == null
+                                ? null
+                                : () => _lockIn(),
+                            verticalPadding: 14,
+                            borderRadius: 10,
+                            child: Text(
+                              _selectedAnswer == null
+                                  ? 'Select an option'
+                                  : 'Submit Answer',
+                              style: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold),
                             ),
                           ),
                         ),

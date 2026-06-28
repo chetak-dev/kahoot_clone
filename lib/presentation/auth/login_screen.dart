@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/gradient_button.dart';
 import '../../data/services/auth_provider.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -43,103 +44,102 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             Expanded(
               child: SingleChildScrollView(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 28, vertical: 40),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Image.asset('assets/images/logo.png', height: 150),
+                const EdgeInsets.symmetric(horizontal: 28, vertical: 40),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 420),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Image.asset('assets/images/logo.png', height: 150),
                         const SizedBox(height: 16),
-                    const SizedBox(height: 58),
-                    Text(
-                      'Get Ready for a Multiplayer Live Quiz Game',
-                      style:
+                        const SizedBox(height: 58),
+                        Text(
+                          'Get Ready for a Multiplayer Live Quiz Game',
+                          style:
                           TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 15),
-                    ),
-                    const SizedBox(height: 24),
-
-                    if (_error != null) ...[
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 10),
-                        decoration: BoxDecoration(
-                          color: Colors.redAccent.withOpacity(0.12),
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(
-                              color: Colors.redAccent.withOpacity(0.5)),
                         ),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.error_outline,
-                                color: Colors.redAccent, size: 18),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                _error!,
-                                style: const TextStyle(
-                                    color: Colors.redAccent, fontSize: 13),
-                              ),
+                        const SizedBox(height: 24),
+
+                        if (_error != null) ...[
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: Colors.redAccent.withOpacity(0.12),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                  color: Colors.redAccent.withOpacity(0.5)),
                             ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                    ],
+                            child: Row(
+                              children: [
+                                const Icon(Icons.error_outline,
+                                    color: Colors.redAccent, size: 18),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    _error!,
+                                    style: const TextStyle(
+                                        color: Colors.redAccent, fontSize: 13),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                        ],
 
-                    // ── Primary action: Join a Game ──────────────────────
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: _isLoading ? null : _joinAsGuest,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.accent,
-                          foregroundColor: Colors.black,
-                          minimumSize: const Size(double.infinity, 58),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
+                        // ── Primary action: Join a Game ──────────────────────
+                        SizedBox(
+                          width: double.infinity,
+                          child: GradientButton(
+                            onPressed: _isLoading ? null : _joinAsGuest,
+                            verticalPadding: 18,
+                            borderRadius: 14,
+                            icon: _isLoading ? null : Icons.gamepad_rounded,
+                            child: _isLoading
+                                ? const SizedBox(
+                              height: 22,
+                              width: 22,
+                              child: CircularProgressIndicator(
+                                color: Colors.black,
+                                strokeWidth: 2,
+                              ),
+                            )
+                                : const Text(
+                              'Join a Game',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 17),
+                            ),
                           ),
                         ),
-                        icon: _isLoading
-                            ? const SizedBox(
-                                height: 22,
-                                width: 22,
-                                child: CircularProgressIndicator(
-                                  color: Colors.black,
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : const Icon(Icons.gamepad_rounded),
-                        label: Text(
-                          _isLoading ? 'Joining...' : 'Join a Game',
-                          style: const TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 17),
-                        ),
-                      ),
-                    ),
 
-                    const SizedBox(height: 24),
+                        const SizedBox(height: 24),
 
-                    // ── Secondary: small host sign-in link ───────────────
-                    TextButton(
-                      onPressed: _isLoading
-                          ? null
-                          : () => context.push('/host-login'),
-                      style: TextButton.styleFrom(
-                        foregroundColor: Colors.white.withOpacity(0.6),
-                      ),
-                      child: const Text.rich(
-                        TextSpan(
-                          text: 'Are you a host? ',
-                          children: [
+                        // ── Secondary: small host sign-in link ───────────────
+                        TextButton(
+                          onPressed: _isLoading
+                              ? null
+                              : () => context.push('/host-login'),
+                          style: TextButton.styleFrom(
+                            foregroundColor: Colors.white.withOpacity(0.6),
+                          ),
+                          child: const Text.rich(
                             TextSpan(
-                              text: 'Sign in',
-                              style: TextStyle(fontWeight: FontWeight.bold),
+                              text: 'Are you a host? ',
+                              children: [
+                                TextSpan(
+                                  text: 'Sign in',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                              ],
                             ),
-                          ],
+                          ),
                         ),
-                      ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               ),
             ),

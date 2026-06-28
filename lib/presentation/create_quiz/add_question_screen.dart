@@ -40,7 +40,7 @@ class _AddQuestionScreenState extends ConsumerState<AddQuestionScreen> {
       _questionController.text = q.question;
       _selectedType = q.type;
       _timeLimit = q.timeLimitSeconds;
-      _points = _pointsToInt(q.points);
+      _points = q.points;
       for (int i = 0; i < q.options.length && i < _optionControllers.length; i++) {
         _optionControllers[i].text = q.options[i];
       }
@@ -51,17 +51,6 @@ class _AddQuestionScreenState extends ConsumerState<AddQuestionScreen> {
         _trueFalseAnswer = q.correctAnswers.isNotEmpty &&
             q.correctAnswers.first.toLowerCase() == 'true';
       }
-    }
-  }
-
-  int _pointsToInt(PointsType p) {
-    switch (p) {
-      case PointsType.none:
-        return 0;
-      case PointsType.double:
-        return 2000;
-      case PointsType.standard:
-        return 1000;
     }
   }
 
@@ -113,11 +102,7 @@ class _AddQuestionScreenState extends ConsumerState<AddQuestionScreen> {
       options: allOptions,
       correctAnswers: correctAnswers,
       timeLimitSeconds: _timeLimit,
-      points: _points == 0
-          ? PointsType.none
-          : _points == 2000
-          ? PointsType.double
-          : PointsType.standard,
+      points: _points,
     );
 
     final editor = ref.read(quizEditorProvider.notifier);
@@ -212,7 +197,7 @@ class _AddQuestionScreenState extends ConsumerState<AddQuestionScreen> {
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
-              children: [5, 10, 20, 30, 60, 120].map((t) {
+              children: [5, 10, 15, 20, 25, 30].map((t) {
                 final isSelected = _timeLimit == t;
                 return ChoiceChip(
                   label: Text('${t}s'),
@@ -233,10 +218,10 @@ class _AddQuestionScreenState extends ConsumerState<AddQuestionScreen> {
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
-              children: [0, 1000, 2000].map((p) {
+              children: [10, 100, 1000].map((p) {
                 final isSelected = _points == p;
                 return ChoiceChip(
-                  label: Text(p == 0 ? 'No Points' : '$p pts'),
+                  label: Text('$p pts'),
                   selected: isSelected,
                   onSelected: (_) => setState(() => _points = p),
                   selectedColor: AppTheme.accent,

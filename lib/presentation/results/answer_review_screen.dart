@@ -10,6 +10,8 @@ import '../../data/models/quiz_model.dart';
 import '../../data/repositories/game_repository.dart';
 import '../../data/services/game_provider.dart';
 import '../../core/utils/nav_helpers.dart';
+import '../../core/widgets/gradient_button.dart';
+
 
 
 class AnswerReviewScreen extends ConsumerWidget {
@@ -135,18 +137,13 @@ class AnswerReviewScreen extends ConsumerWidget {
                           ),
                           const SizedBox(width: 12),
                           Expanded(
-                            child: ElevatedButton(
+                            child: // "Home" (inside Expanded)
+                            GradientButton(
                               onPressed: () => goHome(context, ref),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppTheme.accent,
-                                foregroundColor: Colors.black,
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: 14),
-                              ),
-                              child: const Text('Home',
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold)),
+                              verticalPadding: 14,
+                              child: const Text('Home', style: TextStyle(fontWeight: FontWeight.bold)),
                             ),
+
                           ),
                         ],
                       ),
@@ -172,14 +169,12 @@ class AnswerReviewScreen extends ConsumerWidget {
                   fontSize: 24,
                   fontWeight: FontWeight.bold)),
           const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: () => goHome(context, ref) ,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.accent,
-              foregroundColor: Colors.black,
-            ),
+          // "Back to Home" (_ended state)
+          GradientButton(
+            onPressed: () => goHome(context, ref),
             child: const Text('Back to Home'),
           ),
+
         ],
       ),
     );

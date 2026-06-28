@@ -506,7 +506,7 @@ class _QuestionTile extends StatelessWidget {
                     _Chip(_typeLabel, Colors.blueAccent),
                     _Chip('${question.timeLimitSeconds}s',
                         Colors.orangeAccent),
-                    _Chip(question.points.name, Colors.greenAccent),
+                    _Chip('${question.points} pts', Colors.greenAccent),
                   ],
                 ),
               ],

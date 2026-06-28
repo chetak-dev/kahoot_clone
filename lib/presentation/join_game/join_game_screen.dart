@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import '../../core/theme/app_theme.dart';
 import '../../data/services/game_provider.dart';
 import '../../data/services/auth_provider.dart';
+import '../../core/widgets/gradient_button.dart';
+
 
 class JoinGameScreen extends ConsumerStatefulWidget {
   const JoinGameScreen({super.key});
@@ -262,7 +264,7 @@ class _JoinGameScreenState extends ConsumerState<JoinGameScreen> {
                               ListTileControlAffinity.leading,
                               contentPadding: EdgeInsets.zero,
                               title: const Text(
-                                'I have read the above instructions',
+                                'I have read the above Quiz instructions',
                                 style: TextStyle(
                                     color: Colors.white, fontSize: 13),
                               ),
@@ -291,28 +293,13 @@ class _JoinGameScreenState extends ConsumerState<JoinGameScreen> {
                           SizedBox(height: _showCheckboxError ? 4 : 16),
 
                           // ── Join button — always yellow ───────────────
-                          ElevatedButton(
+                          GradientButton(
                             onPressed: _isJoining ? null : _joinGame,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppTheme.accent,
-                              foregroundColor: Colors.black,
-                              padding:
-                              const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12)),
-                            ),
                             child: _isJoining
-                                ? const SizedBox(
-                              height: 24,
-                              width: 24,
-                              child: CircularProgressIndicator(
-                                  color: Colors.black, strokeWidth: 2),
-                            )
-                                : const Text('Join Now!',
-                                style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold)),
+                                ? const SizedBox(height: 24, width: 24, child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2))
+                                : const Text('Join Now!', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                           ),
+
                         ],
                       ),
                     ),

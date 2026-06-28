@@ -124,9 +124,9 @@ class _QuestionCard extends StatelessWidget {
               const SizedBox(width: 16),
               const Icon(Icons.star, size: 16, color: Colors.amber),
               const SizedBox(width: 4),
-              Text(_pointsLabel(question.points),
-                  style:
-                  const TextStyle(color: Colors.white54, fontSize: 12)),
+              Text('${question.points} pts',
+                  style: const TextStyle(color: Colors.white54, fontSize: 12)),
+
             ],
           ),
           const SizedBox(height: 12),
@@ -197,14 +197,4 @@ class _QuestionCard extends StatelessWidget {
     }
   }
 
-  String _pointsLabel(PointsType points) {
-    switch (points) {
-      case PointsType.none:
-        return 'No points';
-      case PointsType.standard:
-        return '1000 pts';
-      case PointsType.double:
-        return '2000 pts';
-    }
-  }
 }

@@ -170,12 +170,27 @@ class GameRepository {
   }
 
   // Difference (ms) between this device's clock and Firebase's server clock.
+  // Difference (ms) between this device's clock and Firebase's server clock.
+  // Difference (ms) between this device's clock and Firebase's server clock.
   Future<int> getServerTimeOffset() async {
-    final snap = await _db.ref('.info/serverTimeOffset').get();
-    final v = snap.value;
-    if (v is num) return v.toInt();
+    // NOTE: `.info/serverTimeOffset` is a synthetic client-side node.
+    // Calling `.get()` on it is unreliable (it can hang or throw), so read it
+    // via a one-shot listener instead, with a short timeout fallback.
+    try {
+      final event = await _db
+          .ref('.info/serverTimeOffset')
+          .onValue
+          .first
+          .timeout(const Duration(seconds: 2));
+      final v = event.snapshot.value;
+      if (v is num) return v.toInt();
+    } catch (_) {
+      // Fall through to 0 — a missing offset just means we trust local time.
+    }
     return 0;
   }
+
+
 
   Stream<int> watchServerTimeOffset() {
     return _db.ref('.info/serverTimeOffset').onValue.map((event) {

@@ -5,6 +5,8 @@ import '../../core/theme/app_theme.dart';
 import '../../data/services/game_provider.dart';
 import '../../core/utils/nav_helpers.dart';
 import '../../data/services/auth_provider.dart';
+import '../../core/widgets/gradient_button.dart';
+
 
 
 class ResultsScreen extends ConsumerWidget {
@@ -42,15 +44,12 @@ class ResultsScreen extends ConsumerWidget {
                           fontSize: 32,
                           fontWeight: FontWeight.bold)),
                   const SizedBox(height: 24),
-                  ElevatedButton(
-                    // ✅ Fixed: /home → /
+                  // "Back to Home" (empty state)
+                  GradientButton(
                     onPressed: () => goHome(context, ref),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.accent,
-                      foregroundColor: Colors.black,
-                    ),
                     child: const Text('Back to Home'),
                   ),
+
                 ],
               ),
             ),
@@ -164,21 +163,13 @@ class ResultsScreen extends ConsumerWidget {
                         const SizedBox(width: 12),
                       ],
                       Expanded(
-                        child: ElevatedButton(
+                        child: // "Home" (inside Expanded)
+                        GradientButton(
                           onPressed: () => goHome(context, ref),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppTheme.accent,
-                            foregroundColor: Colors.black,
-                            padding:
-                                const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12)),
-                          ),
-                          child: const Text('Home',
-                              style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold)),
+                          verticalPadding: 16,
+                          child: const Text('Home', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                         ),
+
                       ),
                     ],
                   ),

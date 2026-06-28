@@ -13,7 +13,7 @@ class MyApp extends ConsumerWidget {
     final router = ref.read(routerProvider);
 
     return MaterialApp.router(
-      title: 'QuizLive',
+      title: 'VOGI Multiplayer Quiz Platform',
       debugShowCheckedModeBanner: false,
       routerConfig: router,
       theme: ThemeData.dark().copyWith(
