@@ -9,7 +9,7 @@ import '../../data/models/question_model.dart';
 import '../../data/models/quiz_model.dart';
 import '../../data/repositories/quiz_repository.dart';
 import '../../data/services/auth_provider.dart';
-import '../../data/services/csv_import_service.dart';
+import '../../data/services/excel_import_service.dart';
 import '../../data/services/quiz_provider.dart';
 
 class CreateQuizScreen extends ConsumerStatefulWidget {
@@ -48,7 +48,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
         editor.clearAll();
       }
       if (widget.importCsvOnOpen) {
-        _importFromCsv();
+        _importQuestions();
       }
     });
   }
@@ -62,26 +62,25 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
 
   Future<void> _downloadSample() async {
     try {
-      await CsvImportService.downloadSampleCsv();
+      await ExcelImportService.downloadSampleExcel();
     } catch (e) {
       _showError('Could not download sample: $e');
     }
   }
 
-  Future<void> _importFromCsv() async {
+  Future<void> _importQuestions() async {
     setState(() => _isImporting = true);
     try {
-      final questions = await CsvImportService.importFromCsv();
+      final questions = await ExcelImportService.importQuestions();
       if (questions == null) {
         setState(() => _isImporting = false);
         return;
       }
       if (questions.isEmpty) {
-        _showError('No valid questions found in the CSV.');
+        _showError('No valid questions found in the file.');
         setState(() => _isImporting = false);
         return;
       }
-      // Append imported questions to the current set.
       final editor = ref.read(quizEditorProvider.notifier);
       for (final q in questions) {
         editor.addQuestion(q);
@@ -89,10 +88,11 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
       setState(() => _isImporting = false);
       _showSuccess('${questions.length} question(s) imported!');
     } catch (e) {
-      _showError('Failed to import CSV: $e');
+      _showError('Failed to import file: $e');
       setState(() => _isImporting = false);
     }
   }
+
 
   Future<void> _saveQuiz() async {
     final questions = ref.read(quizEditorProvider);
@@ -232,11 +232,11 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
               maxLines: 2,
             ),
             const SizedBox(height: 32),
-            _SectionHeader('Import Questions from CSV'),
+            _SectionHeader('Import Questions from Excel'),
 
             const SizedBox(height: 6),
             Text(
-              'Download the sample CSV, fill in your questions, then upload it.',
+              'Download the sample Excel file, fill in your questions, then upload it (.xlsx).',
               style: TextStyle(
                   color: Colors.white.withOpacity(0.5), fontSize: 13),
             ),
@@ -246,7 +246,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
                 Expanded(
                   child: _OutlineButton(
                     icon: Icons.download_rounded,
-                    label: 'Sample CSV',
+                    label: 'Sample Excel',
                     color: Colors.blueAccent,
                     onTap: _downloadSample,
                   ),
@@ -255,9 +255,9 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
                 Expanded(
                   child: _OutlineButton(
                     icon: Icons.upload_file_rounded,
-                    label: 'Upload CSV',
+                    label: 'Upload Excel',
                     color: Colors.orangeAccent,
-                    onTap: _isImporting ? null : _importFromCsv,
+                    onTap: _isImporting ? null : _importQuestions,
                     isLoading: _isImporting,
                   ),
                 ),

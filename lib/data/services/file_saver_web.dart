@@ -4,8 +4,13 @@
 import 'dart:html' as html;
 import 'dart:typed_data';
 
-Future<void> saveCsvFile(String fileName, Uint8List bytes) async {
-  final blob = html.Blob(<Object>[bytes], 'text/csv');
+Future<void> saveBytesFile(
+    String fileName,
+    Uint8List bytes, {
+      String mimeType = 'application/octet-stream',
+      List<String> extensions = const ['xlsx'],
+    }) async {
+  final blob = html.Blob(<Object>[bytes], mimeType);
   final url = html.Url.createObjectUrlFromBlob(blob);
   final anchor = html.AnchorElement(href: url)
     ..download = fileName

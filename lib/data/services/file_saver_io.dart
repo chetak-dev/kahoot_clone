@@ -4,12 +4,17 @@
 import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 
-Future<void> saveCsvFile(String fileName, Uint8List bytes) async {
+Future<void> saveBytesFile(
+    String fileName,
+    Uint8List bytes, {
+      String mimeType = 'application/octet-stream',
+      List<String> extensions = const ['xlsx'],
+    }) async {
   await FilePicker.platform.saveFile(
-    dialogTitle: 'Save sample CSV',
+    dialogTitle: 'Save file',
     fileName: fileName,
     type: FileType.custom,
-    allowedExtensions: ['csv'],
+    allowedExtensions: extensions,
     bytes: bytes,
   );
 }
