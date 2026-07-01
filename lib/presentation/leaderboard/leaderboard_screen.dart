@@ -160,9 +160,25 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
 
 
           final sorted = session.players.values.toList()
-            ..sort((a, b) => b.score.compareTo(a.score));
+            ..sort((a, b) {
+              final scoreDiff = b.score.compareTo(a.score);
+              if (scoreDiff != 0) return scoreDiff;
+              // Tie on score → faster total response time ranks higher.
+              return a.totalResponseTimeMs.compareTo(b.totalResponseTimeMs);
+            });
+
+          // How many players share each score. We only reveal the
+          // response-time tiebreaker text when a score is actually tied.
+          final scoreCounts = <int, int>{};
+          for (final p in sorted) {
+            scoreCounts[p.score] = (scoreCounts[p.score] ?? 0) + 1;
+          }
+
+          // The current participant, so we can highlight their own row.
+          final myUid = FirebaseAuth.instance.currentUser?.uid;
 
           final isLast = _quiz != null &&
+
               session.currentQuestion >= _quiz!.questions.length - 1;
 
           return Scaffold(
@@ -209,18 +225,31 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                     itemBuilder: (context, index) {
                       final player = sorted[index];
                       final medals = ['🥇', '🥈', '🥉'];
+                      final isMe = myUid != null && player.playerId == myUid;
+                      final isTied = (scoreCounts[player.score] ?? 0) > 1;
+                      final responseSeconds =
+                      (player.totalResponseTimeMs / 1000)
+                          .toStringAsFixed(1);
+                      // Distinct highlight for the current participant so they
+                      // can find themselves without scanning the whole list.
+                      const meColor = Color(0xFF4FC3F7);
                       return Container(
                         margin: const EdgeInsets.only(bottom: 8),
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: index == 0
+                          color: isMe
+                              ? meColor.withOpacity(0.22)
+                              : index == 0
                               ? AppTheme.accent.withOpacity(0.2)
                               : Colors.white10,
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: index == 0
+                            color: isMe
+                                ? meColor
+                                : index == 0
                                 ? AppTheme.accent
                                 : Colors.transparent,
+                            width: isMe ? 2 : 1,
                           ),
                         ),
                         child: Row(
@@ -231,22 +260,72 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                             ),
                             const SizedBox(width: 16),
                             Expanded(
-                              child: Text(player.name,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold)),
+                              child: Row(
+                                children: [
+                                  Flexible(
+                                    child: Text(player.name,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold)),
+                                  ),
+                                  if (isMe) ...[
+                                    const SizedBox(width: 8),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 8, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: meColor,
+                                        borderRadius:
+                                        BorderRadius.circular(20),
+                                      ),
+                                      child: const Text('You',
+                                          style: TextStyle(
+                                              color: Colors.black,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.bold)),
+                                    ),
+                                  ],
+                                ],
+                              ),
                             ),
                             const SizedBox(width: 8),
-                            Text('${player.score} pts',
-                                style: const TextStyle(
-                                    color: AppTheme.accent,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold)),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text('${player.score} pts',
+                                    style: const TextStyle(
+                                        color: AppTheme.accent,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold)),
+                                // Reveal the tiebreaker only when this score is
+                                // shared, so players understand the ordering.
+                                if (isTied)
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 2),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(Icons.bolt_rounded,
+                                            size: 12, color: Colors.white54),
+                                        const SizedBox(width: 2),
+                                        Text('${responseSeconds}s',
+                                            style: const TextStyle(
+                                                color: Colors.white54,
+                                                fontSize: 11,
+                                                fontWeight:
+                                                FontWeight.w500)),
+                                      ],
+                                    ),
+                                  ),
+                              ],
+                            ),
                           ],
                         ),
                       );
+
                     },
                   ),
                 ),
