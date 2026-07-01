@@ -56,7 +56,15 @@ final routerProvider = Provider<GoRouter>((ref) {
 
 
       if (!isLoggedIn && !isAuthRoute) return '/login';
-      if (isLoggedIn && isAuthRoute) return '/';
+      if (isLoggedIn && isAuthRoute) {
+        // Real users go to their dashboard. Guests may stay on the '/login'
+        // landing — it's their home — so the system/browser back button can
+        // return here instead of bouncing (which made a single back tap look
+        // like it did nothing on web) or landing on the empty guest home.
+        return (user?.isGuest ?? false) ? null : '/';
+      }
+
+
 
       final hostOnlyRoutes = [
         '/create-quiz',

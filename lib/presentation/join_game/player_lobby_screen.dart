@@ -73,51 +73,72 @@ class PlayerLobbyScreen extends ConsumerWidget {
                     color: Colors.white, fontWeight: FontWeight.bold)),
           ),
           body: SafeArea(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.hourglass_top_rounded,
-                      size: 64, color: AppTheme.accent),
-                  const SizedBox(height: 24),
-                  const Text(
-                    'You\'re in!',
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Waiting for host to start...',
-                    style: TextStyle(color: Colors.white70, fontSize: 16),
-                  ),
-                  const SizedBox(height: 48),
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white10,
-                      borderRadius: BorderRadius.circular(16),
+            child: LayoutBuilder(
+              builder: (context, constraints) => SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 24, vertical: 24),
+                child: ConstrainedBox(
+                  constraints:
+                  BoxConstraints(minHeight: constraints.maxHeight - 48),
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 420),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.hourglass_top_rounded,
+                              size: 64, color: AppTheme.accent),
+                          const SizedBox(height: 24),
+                          const Text(
+                            'You\'re in!',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 32,
+                                fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 8),
+                          const Text(
+                            'Waiting for host to start...',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                color: Colors.white70, fontSize: 16),
+                          ),
+                          const SizedBox(height: 48),
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.white10,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  '${session.players.length}',
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 48,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                const Text('Players Joined',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(color: Colors.white70)),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    child: Column(
-                      children: [
-                        Text(
-                          '${session.players.length}',
-                          style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 48,
-                              fontWeight: FontWeight.bold),
-                        ),
-                        const Text('Players Joined',
-                            style: TextStyle(color: Colors.white70)),
-                      ],
-                    ),
                   ),
-                ],
+                ),
               ),
             ),
           ),
+
         );
       },
         ),

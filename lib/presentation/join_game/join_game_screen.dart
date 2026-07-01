@@ -40,12 +40,12 @@ class _JoinGameScreenState extends ConsumerState<JoinGameScreen> {
     super.dispose();
   }
 
-  void _leaveToHome() {
-    // Navigate first — before any auth state change fires go_router's redirect
+  Future<void> _leaveToHome() async {
+    await ref.read(authNotifierProvider.notifier).signOut();
     if (mounted) context.go('/login');
-    // Sign out in background (guest session, no need to await)
-    ref.read(authNotifierProvider.notifier).signOut().ignore();
   }
+
+
 
 
   Future<void> _joinGame() async {
