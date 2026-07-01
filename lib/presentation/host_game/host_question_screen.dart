@@ -273,8 +273,10 @@ class _HostQuestionScreenState extends ConsumerState<HostQuestionScreen> {
                                   return Padding(
                                     padding: const EdgeInsets.only(bottom: 8),
                                     child: Container(
-                                      height: 56,
                                       width: double.infinity,
+                                      constraints: const BoxConstraints(
+                                          minHeight: 56),
+                                      alignment: Alignment.center,
                                       decoration: BoxDecoration(
                                         color: _timerDone && isCorrect
                                             ? AppTheme.correct
@@ -285,25 +287,24 @@ class _HostQuestionScreenState extends ConsumerState<HostQuestionScreen> {
                                                 : 1.0),
                                         borderRadius: BorderRadius.circular(8),
                                       ),
-                                      child: Center(
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 16),
-                                          child: Text(
-                                            e.value,
-                                            textAlign: TextAlign.center,
-                                            style: TextStyle(
-                                              color: _timerDone && !isCorrect
-                                                  ? Colors.white38
-                                                  : Colors.white,
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 16,
-                                            ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 16, vertical: 12),
+                                        child: Text(
+                                          e.value,
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                            color: _timerDone && !isCorrect
+                                                ? Colors.white38
+                                                : Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
                                           ),
                                         ),
                                       ),
                                     ),
                                   );
+
                                 }).toList(),
                               ),
                             ],

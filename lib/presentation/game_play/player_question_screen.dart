@@ -422,8 +422,8 @@ class _PlayerQuestionScreenState extends ConsumerState<PlayerQuestionScreen> {
               onTap: () => setState(() => _selectedAnswer = option),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 150),
-                height: 52,
                 width: double.infinity,
+                constraints: const BoxConstraints(minHeight: 52),
                 decoration: BoxDecoration(
                   color: isSelected
                       ? AppTheme.accent.withOpacity(0.12)
@@ -436,63 +436,65 @@ class _PlayerQuestionScreenState extends ConsumerState<PlayerQuestionScreen> {
                     width: isSelected ? 2 : 1,
                   ),
                 ),
-                child: Row(
-                  children: [
-                    // Letter badge
-                    Container(
-                      width: 48,
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? AppTheme.accent
-                            : _labelColors[index % _labelColors.length]
-                            .withOpacity(0.25),
-                        borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(9),
-                          bottomLeft: Radius.circular(9),
+                child: IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Container(
+                        width: 48,
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? AppTheme.accent
+                              : _labelColors[index % _labelColors.length]
+                              .withOpacity(0.25),
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(9),
+                            bottomLeft: Radius.circular(9),
+                          ),
                         ),
-                      ),
-                      child: Center(
-                        child: Text(
-                          _labels[index % _labels.length],
-                          style: TextStyle(
-                            color: isSelected
-                                ? Colors.black
-                                : _labelColors[
-                            index % _labelColors.length],
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
+                        child: Center(
+                          child: Text(
+                            _labels[index % _labels.length],
+                            style: TextStyle(
+                              color: isSelected
+                                  ? Colors.black
+                                  : _labelColors[index % _labelColors.length],
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    // Option text
-                    Expanded(
-                      child: Padding(
-                        padding:
-                        const EdgeInsets.symmetric(horizontal: 12),
-                        child: Text(
-                          option,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: isSelected
-                                ? AppTheme.accent
-                                : Colors.white,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 10),
+                          child: Center(
+                            child: Text(
+                              option,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color:
+                                isSelected ? AppTheme.accent : Colors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    // Check icon or spacing
-                    if (isSelected)
-                      const Padding(
-                        padding: EdgeInsets.only(right: 12),
-                        child: Icon(Icons.check_circle_rounded,
-                            color: AppTheme.accent, size: 20),
-                      )
-                    else
-                      const SizedBox(width: 36),
-                  ],
+                      if (isSelected)
+                        const Padding(
+                          padding: EdgeInsets.only(right: 12),
+                          child: Center(
+                            child: Icon(Icons.check_circle_rounded,
+                                color: AppTheme.accent, size: 20),
+                          ),
+                        )
+                      else
+                        const SizedBox(width: 36),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -501,4 +503,5 @@ class _PlayerQuestionScreenState extends ConsumerState<PlayerQuestionScreen> {
       ),
     );
   }
+
 }
