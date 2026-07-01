@@ -106,7 +106,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               const Icon(Icons.quiz_rounded, color: AppTheme.accent),
               const SizedBox(width: 8),
               const Text(
-                'VOGI Multiplayer Quiz Platform',
+                'VOGI Quiz',
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,

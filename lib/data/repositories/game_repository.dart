@@ -140,7 +140,7 @@ class GameRepository {
   }
 
   // Host: show leaderboard with a synced auto-advance countdown
-  Future<void> showLeaderboard(String pin, {int seconds = 5}) async {
+  Future<void> showLeaderboard(String pin, {int seconds = 8}) async {
     final endsAt = DateTime.now().add(Duration(seconds: seconds));
     await _db.ref('game_sessions/$pin').update({
       'status': GameStatus.leaderboard.name,

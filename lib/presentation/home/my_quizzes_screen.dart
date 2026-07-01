@@ -41,12 +41,7 @@ class MyQuizzesScreen extends ConsumerWidget {
             style: TextStyle(
                 color: Colors.white, fontWeight: FontWeight.bold)),
         actions: [
-          // empty-state "Create Your First Quiz"
-          GradientButton(
-            onPressed: () => context.go('/create-quiz'),
-            icon: Icons.add,
-            child: const Text('Create Your First Quiz', style: TextStyle(fontWeight: FontWeight.bold)),
-          ),
+
 
         ],
       ),

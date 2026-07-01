@@ -63,6 +63,15 @@ class ResultsScreen extends ConsumerWidget {
             return a.totalResponseTimeMs.compareTo(b.totalResponseTimeMs);
           });
 
+        // Count shared scores so we surface the response-time tiebreaker only
+        // when it's actually relevant (or always, for the host).
+        final scoreCounts = <int, int>{};
+        for (final p in sorted) {
+          scoreCounts[p.score] = (scoreCounts[p.score] ?? 0) + 1;
+        }
+
+
+
 
         return Scaffold(
           backgroundColor: AppTheme.background,
@@ -113,6 +122,11 @@ class ResultsScreen extends ConsumerWidget {
                       itemCount: sorted.length,
                       itemBuilder: (context, index) {
                         final player = sorted[index];
+                        final isTied =
+                            (scoreCounts[player.score] ?? 0) > 1;
+                        final responseSeconds =
+                        (player.totalResponseTimeMs / 1000)
+                            .toStringAsFixed(1);
                         return Container(
                           margin: const EdgeInsets.only(bottom: 8),
                           padding: const EdgeInsets.all(12),
@@ -134,13 +148,41 @@ class ResultsScreen extends ConsumerWidget {
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold)),
                               ),
-                              Text('${player.score} pts',
-                                  style: const TextStyle(
-                                      color: AppTheme.accent,
-                                      fontWeight: FontWeight.bold)),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text('${player.score} pts',
+                                      style: const TextStyle(
+                                          color: AppTheme.accent,
+                                          fontWeight: FontWeight.bold)),
+                                  // Show the response-time tiebreaker for tied
+                                  // scores — and always for the host.
+                                  if (isTied || isHost)
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 2),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Icon(Icons.bolt_rounded,
+                                              size: 12,
+                                              color: Colors.white54),
+                                          const SizedBox(width: 2),
+                                          Text('${responseSeconds}s',
+                                              style: const TextStyle(
+                                                  color: Colors.white54,
+                                                  fontSize: 11,
+                                                  fontWeight:
+                                                  FontWeight.w500)),
+                                        ],
+                                      ),
+                                    ),
+                                ],
+                              ),
                             ],
                           ),
                         );
+
                       },
                     ),
                   ),

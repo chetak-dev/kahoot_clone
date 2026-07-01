@@ -27,7 +27,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
   bool _advanced = false;
   bool _saving = false;
   QuizModel? _quiz;
-  int _secondsLeft = 5;
+  int _secondsLeft = 8;
 
   @override
   void initState() {
@@ -48,7 +48,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
 
     final endsAt = session.countdownEndsAt;
     final secs =
-    endsAt == null ? 5 : endsAt.difference(DateTime.now()).inSeconds;
+    endsAt == null ? 8 : endsAt.difference(DateTime.now()).inSeconds;
     final clamped = secs < 0 ? 0 : secs;
     if (clamped != _secondsLeft && mounted) {
       setState(() => _secondsLeft = clamped);
@@ -302,7 +302,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                                         fontWeight: FontWeight.bold)),
                                 // Reveal the tiebreaker only when this score is
                                 // shared, so players understand the ordering.
-                                if (isTied)
+                                if (isTied || isHost)
                                   Padding(
                                     padding: const EdgeInsets.only(top: 2),
                                     child: Row(
