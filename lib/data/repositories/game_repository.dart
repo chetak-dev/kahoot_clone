@@ -36,11 +36,14 @@ class GameRepository {
     if (!snapshot.exists) return false;
 
     final data = Map<String, dynamic>.from(snapshot.value as Map);
-    // Allow joining while the game is still in the lobby OR during the
-    // pre-game countdown. Once the first question starts (or later), joining
-    // is no longer allowed.
+    // Allow joining at any point while the game is still going — lobby,
+    // countdown, an active question, or the leaderboard between questions.
+    // A mid-game joiner starts at 0 points and is synced into the current
+    // state (they'll answer from the next question they catch, or the rest of
+    // the current one if time remains). Joining is only blocked once the game
+    // has fully ended.
     final status = data['status'];
-    if (status != 'lobby' && status != 'countdown') return false;
+    if (status == 'ended') return false;
 
     final player = PlayerSession(
       playerId: playerId,
@@ -251,7 +254,6 @@ class GameRepository {
       await deleteGame(pin);
     }
   }
-
 
   // Difference (ms) between this device's clock and Firebase's server clock.
   Future<int> getServerTimeOffset() async {

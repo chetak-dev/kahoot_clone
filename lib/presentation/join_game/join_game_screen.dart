@@ -6,7 +6,6 @@ import '../../data/services/game_provider.dart';
 import '../../data/services/auth_provider.dart';
 import '../../core/widgets/gradient_button.dart';
 
-
 class JoinGameScreen extends ConsumerStatefulWidget {
   const JoinGameScreen({super.key});
 
@@ -45,9 +44,6 @@ class _JoinGameScreenState extends ConsumerState<JoinGameScreen> {
     if (mounted) context.go('/login');
   }
 
-
-
-
   Future<void> _joinGame() async {
     if (_pinController.text.trim().length != 6) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -78,7 +74,7 @@ class _JoinGameScreenState extends ConsumerState<JoinGameScreen> {
         context.go('/player-lobby/${_pinController.text.trim()}');
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Game not found or already started!')),
+          const SnackBar(content: Text('Game not found or already ended!')),
         );
       }
     } catch (e) {

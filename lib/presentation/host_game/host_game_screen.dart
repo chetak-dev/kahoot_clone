@@ -98,7 +98,7 @@ class _HostGameScreenState extends ConsumerState<HostGameScreen> {
         backgroundColor: AppTheme.background,
         title: const Text('Start Game', style: TextStyle(color: Colors.white)),
         content: const Text(
-          'Start the game now? Players can still join during the countdown.',
+          'Start the game now? Players can still join after it starts.',
           style: TextStyle(color: Colors.white70),
         ),
         actions: [
