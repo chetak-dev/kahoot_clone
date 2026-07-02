@@ -282,7 +282,7 @@ class ResultsScreen extends ConsumerWidget {
         title: const Text('Are you sure to exit?',
             style: TextStyle(color: Colors.white)),
         content: const Text(
-          "You won't be able to see this page again.",
+          "You won't be able to return to this page again.",
           style: TextStyle(color: Colors.white70),
         ),
         actions: [
