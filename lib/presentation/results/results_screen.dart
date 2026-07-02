@@ -207,7 +207,9 @@ class ResultsScreen extends ConsumerWidget {
                       Expanded(
                         child: // "Home" (inside Expanded)
                         GradientButton(
-                          onPressed: () => goHome(context, ref),
+                          onPressed: isHost
+                              ? () => goHome(context, ref)
+                              : () => _confirmExitHome(context, ref),
                           verticalPadding: 16,
                           child: const Text('Home', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                         ),
@@ -268,4 +270,35 @@ class ResultsScreen extends ConsumerWidget {
       ),
     );
   }
+
+
+  // Participants have no way back to this screen once they leave, so confirm
+// before exiting to home.
+  Future<void> _confirmExitHome(BuildContext context, WidgetRef ref) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppTheme.background,
+        title: const Text('Are you sure to exit?',
+            style: TextStyle(color: Colors.white)),
+        content: const Text(
+          "You won't be able to see this page again.",
+          style: TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Exit', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && context.mounted) goHome(context, ref);
+  }
+
+
 }
