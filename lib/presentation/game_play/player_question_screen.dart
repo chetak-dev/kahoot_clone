@@ -46,6 +46,19 @@ class _PlayerQuestionScreenState extends ConsumerState<PlayerQuestionScreen> {
 
   StreamSubscription? _offsetSub;
 
+  // Cache the quiz fetch so it isn't re-issued on every rebuild.
+  // The quizId is fixed for the whole game, so a single fetch is enough.
+  Future<QuizModel?>? _quizFuture;
+  String? _quizFutureId;
+
+  Future<QuizModel?> _quizFor(String quizId) {
+    if (_quizFuture == null || _quizFutureId != quizId) {
+      _quizFutureId = quizId;
+      _quizFuture = GameRepository().getQuizForGame(quizId);
+    }
+    return _quizFuture!;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -210,7 +223,7 @@ class _PlayerQuestionScreenState extends ConsumerState<PlayerQuestionScreen> {
           }
 
           return FutureBuilder<QuizModel?>(
-            future: GameRepository().getQuizForGame(session.quizId),
+            future: _quizFor(session.quizId),
             builder: (context, snapshot) {
               if (!snapshot.hasData) {
                 return const Scaffold(

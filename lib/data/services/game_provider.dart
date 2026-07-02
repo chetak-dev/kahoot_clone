@@ -88,9 +88,9 @@ class GameNotifier extends AsyncNotifier<void> {
   }
 
 
-  // Host: start the 10-second countdown
-  Future<void> startCountdown(String pin) async {
-    await _repo.startCountdown(pin);
+  // Host: start the 60-second countdown
+  Future<void> startCountdown(String pin, {int seconds = 60}) async {
+    await _repo.startCountdown(pin, seconds: seconds);
   }
 
 

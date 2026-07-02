@@ -37,7 +37,12 @@ class GameRepository {
     if (!snapshot.exists) return false;
 
     final data = Map<String, dynamic>.from(snapshot.value as Map);
-    if (data['status'] != 'lobby') return false;
+    // Allow joining while the game is still in the lobby OR during the
+    // pre-game countdown. Once the first question starts (or later), joining
+    // is no longer allowed.
+    final status = data['status'];
+    if (status != 'lobby' && status != 'countdown') return false;
+
 
     final player = PlayerSession(
       playerId: playerId,
@@ -131,7 +136,7 @@ class GameRepository {
   }
 
   // Host: begin a synced countdown before the first question
-  Future<void> startCountdown(String pin, {int seconds = 10}) async {
+  Future<void> startCountdown(String pin, {int seconds = 60}) async {
     final endsAt = DateTime.now().add(Duration(seconds: seconds));
     await _db.ref('game_sessions/$pin').update({
       'status': GameStatus.countdown.name,

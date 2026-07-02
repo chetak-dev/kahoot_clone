@@ -20,6 +20,7 @@ class HostGameScreen extends ConsumerStatefulWidget {
 }
 
 class _HostGameScreenState extends ConsumerState<HostGameScreen> {
+  static const int _countdownSeconds = 60;
   String? _pin;
   bool _isCreating = true;
   Timer? _countdownTimer;
@@ -114,14 +115,17 @@ class _HostGameScreenState extends ConsumerState<HostGameScreen> {
     if (confirmed != true) return;
 
     // Begin the synced countdown for everyone.
-    await ref.read(gameNotifierProvider.notifier).startCountdown(_pin!);
+    await ref
+        .read(gameNotifierProvider.notifier)
+        .startCountdown(_pin!, seconds: _countdownSeconds);
 
-    // Host is the authority: move to the first question after 10s.
+    // Host is the authority: move to the first question after the countdown.
     _countdownTimer?.cancel();
-    _countdownTimer = Timer(const Duration(seconds: 10), () {
+    _countdownTimer = Timer(const Duration(seconds: _countdownSeconds), () {
       if (!mounted) return;
       ref.read(gameNotifierProvider.notifier).nextQuestion(_pin!, 0, durationSeconds: widget.quiz.questions.first.timeLimitSeconds,);
     });
+
   }
 
   @override
