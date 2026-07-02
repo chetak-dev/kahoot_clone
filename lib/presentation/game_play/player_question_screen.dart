@@ -187,7 +187,11 @@ class _PlayerQuestionScreenState extends ConsumerState<PlayerQuestionScreen> {
             ],
           ),
         );
-        if (leave == true && mounted) goHome(context, ref);
+        if (leave == true && mounted) {
+          await ref.read(gameNotifierProvider.notifier).leaveGame(widget.pin);
+          if (mounted) goHome(context, ref);
+        }
+
       },
       child: gameAsync.when(
         loading: () => const Scaffold(

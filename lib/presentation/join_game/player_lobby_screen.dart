@@ -138,8 +138,14 @@ class _PlayerLobbyScreenState extends ConsumerState<PlayerLobbyScreen> {
               elevation: 0,
               leading: IconButton(
                 icon: const Icon(Icons.arrow_back, color: Colors.white),
-                onPressed: () => context.go('/join-game'),
+                onPressed: () async {
+                  await ref
+                      .read(gameNotifierProvider.notifier)
+                      .leaveGame(widget.pin);
+                  if (context.mounted) context.go('/join-game');
+                },
               ),
+
               title: const Text('Waiting for Host',
                   style: TextStyle(
                       color: Colors.white, fontWeight: FontWeight.bold)),

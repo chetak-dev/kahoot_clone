@@ -45,17 +45,32 @@ class GameRepository {
     final status = data['status'];
     if (status == 'ended') return false;
 
+    final playerRef = _db.ref('game_sessions/$pin/players/$playerId');
     final player = PlayerSession(
       playerId: playerId,
       name: name,
       score: 0,
       answers: {},
     );
-    await _db
-        .ref('game_sessions/$pin/players/$playerId')
-        .set(player.toMap());
+    await playerRef.set(player.toMap());
+
+    // Presence: if this client disconnects (tab closed / network lost), the
+    // server removes this player from the game, so their name drops off the
+    // leaderboard automatically. On rejoin a fresh entry is written — so a new
+    // nickname replaces the old one instead of leaving a stale duplicate.
+    await playerRef.onDisconnect().remove();
+
     return true;
   }
+
+  // Player intentionally leaves the game: remove them right away and cancel the
+  // pending onDisconnect handler (no longer needed once they're gone).
+  Future<void> leaveGame(String pin, String playerId) async {
+    final playerRef = _db.ref('game_sessions/$pin/players/$playerId');
+    await playerRef.onDisconnect().cancel();
+    await playerRef.remove();
+  }
+
 
   // Watch game session in real-time
   Stream<GameSessionModel?> watchGame(String pin) {

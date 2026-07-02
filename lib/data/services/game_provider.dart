@@ -99,6 +99,14 @@ class GameNotifier extends AsyncNotifier<void> {
     await _repo.startCountdown(pin, seconds: seconds);
   }
 
+  // Player leaves game (removes them from the leaderboard immediately).
+  Future<void> leaveGame(String pin) async {
+    final firebaseUser = FirebaseAuth.instance.currentUser;
+    if (firebaseUser == null) return;
+    await _repo.leaveGame(pin, firebaseUser.uid);
+  }
+
+
 }
 
 final gameResultsProvider = StreamProvider<List<GameResultModel>>((ref) {
