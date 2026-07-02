@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/app_theme.dart';
 import '../../data/services/auth_provider.dart';
+import '../../data/services/game_provider.dart';
 import '../home/my_quizzes_screen.dart';
 
 final _selectedTabProvider = StateProvider<int>((ref) => 0);
@@ -75,8 +76,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     if (mounted) context.go('/login');
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authNotifierProvider);
@@ -88,7 +87,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       _HomeTab(isHost: isHost, user: user, onHostSignIn: _goToHostSignIn),
       if (isHost) const MyQuizzesScreen(),
     ];
-
 
     return PopScope(
       canPop: false,
@@ -142,7 +140,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
           ],
 
-
         ),
         body: tabs[selectedTab.clamp(0, tabs.length - 1)],
         bottomNavigationBar: isHost
@@ -170,7 +167,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 }
 
-class _HomeTab extends StatelessWidget {
+class _HomeTab extends ConsumerWidget {
   final bool isHost;
   final dynamic user;
   final VoidCallback onHostSignIn;
@@ -181,9 +178,13 @@ class _HomeTab extends StatelessWidget {
     required this.onHostSignIn,
   });
 
-
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // When a host opens their dashboard, quietly save results for any games
+    // that ended while they were away, so they appear in Past Results.
+    if (isHost) {
+      ref.watch(hostResultsReconcileProvider);
+    }
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
@@ -246,7 +247,6 @@ class _HomeTab extends StatelessWidget {
               ),
 
             ]
-
 
           ],
         ),

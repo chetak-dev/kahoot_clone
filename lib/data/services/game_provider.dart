@@ -6,7 +6,6 @@ import 'auth_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/game_result_model.dart';
 
-
 final gameRepositoryProvider = Provider<GameRepository>((ref) {
   return GameRepository();
 });
@@ -18,6 +17,18 @@ StreamProvider.family<GameSessionModel?, String>((ref, pin) {
 });
 
 final activePinProvider = StateProvider<String?>((ref) => null);
+
+// Runs once when a host lands on their dashboard: saves results for any of
+// their games that ended while they were away (so those games appear in
+// Past Results). No-op for non-hosts. Idempotent — safe to re-run.
+final hostResultsReconcileProvider =
+FutureProvider.autoDispose<void>((ref) async {
+  final user = ref.watch(currentUserProvider);
+  if (user == null || !user.isHost) return;
+  final uid = FirebaseAuth.instance.currentUser?.uid;
+  if (uid == null) return;
+  await ref.read(gameRepositoryProvider).reconcileEndedHostResults(uid);
+});
 
 final gameNotifierProvider =
 AsyncNotifierProvider<GameNotifier, void>(() => GameNotifier());
@@ -39,7 +50,6 @@ class GameNotifier extends AsyncNotifier<void> {
     return pin;
   }
 
-  // Player joins game
   // Player joins game
   Future<bool> joinGame(String pin, String name) async {
     // Use Firebase Auth directly — no Firestore needed just to get a uid
@@ -64,19 +74,16 @@ class GameNotifier extends AsyncNotifier<void> {
     await _repo.nextQuestion(pin, index, durationSeconds: durationSeconds);
   }
 
-
   // Host: show leaderboard
   Future<void> showLeaderboard(String pin) async {
     await _repo.showLeaderboard(pin); // now sets the 5s auto-advance timer
   }
-
 
   // Host: end game
   Future<void> endGame(String pin) async {
     await _repo.endGame(pin);
   }
 
-  // Player: submit answer
   // Player: submit answer
   Future<void> submitAnswer(
       String pin, String questionId, String answerId, int points,
@@ -87,12 +94,10 @@ class GameNotifier extends AsyncNotifier<void> {
         pin, user.uid, questionId, answerId, points, responseTimeMs);
   }
 
-
-  // Host: start the 60-second countdown
+  // Host: start the pre-game countdown (defaults to 60 seconds)
   Future<void> startCountdown(String pin, {int seconds = 60}) async {
     await _repo.startCountdown(pin, seconds: seconds);
   }
-
 
 }
 

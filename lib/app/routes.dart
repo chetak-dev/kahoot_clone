@@ -21,11 +21,10 @@ import '../presentation/results/results_screen.dart';
 import '../presentation/create_quiz/add_question_screen.dart';
 import '../data/models/question_model.dart';
 import '../presentation/home/game_history_screen.dart';
+import '../presentation/home/result_detail_screen.dart';
+import '../data/models/game_result_model.dart';
 import '../presentation/auth/host_login_screen.dart';
 import '../presentation/results/answer_review_screen.dart';
-
-
-
 
 class _AuthNotifierListener extends ChangeNotifier {
   _AuthNotifierListener(this._ref) {
@@ -54,7 +53,6 @@ final routerProvider = Provider<GoRouter>((ref) {
           location == '/signup' ||
           location == '/host-login';
 
-
       if (!isLoggedIn && !isAuthRoute) return '/login';
       if (isLoggedIn && isAuthRoute) {
         // Real users go to their dashboard. Guests may stay on the '/login'
@@ -63,8 +61,6 @@ final routerProvider = Provider<GoRouter>((ref) {
         // like it did nothing on web) or landing on the empty guest home.
         return (user?.isGuest ?? false) ? null : '/';
       }
-
-
 
       final hostOnlyRoutes = [
         '/create-quiz',
@@ -96,7 +92,6 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const HostLoginScreen(),
       ),
 
-
       // ── Home ─────────────────────────────────────────────────────────────
       GoRoute(
         path: '/',
@@ -108,7 +103,6 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/my-quizzes',
         builder: (context, state) => const MyQuizzesScreen(isStandalone: true),
       ),
-
 
       // ── Quiz Detail (view all questions) ──────────────────────────────────
       GoRoute(
@@ -143,6 +137,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const GameHistoryScreen(),
       ),
 
+      GoRoute(
+        path: '/result-detail',
+        builder: (context, state) {
+          final result = state.extra as GameResultModel;
+          return ResultDetailScreen(result: result);
+        },
+      ),
 
       // ── Host Game (lobby — receives QuizModel) ────────────────────────────
       GoRoute(
@@ -205,7 +206,6 @@ final routerProvider = Provider<GoRouter>((ref) {
           return AnswerReviewScreen(pin: pin);
         },
       ),
-
 
       GoRoute(
         path: '/add-question',

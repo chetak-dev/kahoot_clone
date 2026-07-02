@@ -7,6 +7,7 @@ import '../../data/models/game_session_model.dart';
 import '../../data/models/quiz_model.dart';
 import '../../data/repositories/game_repository.dart';
 import '../../data/services/game_provider.dart';
+import '../game_play/countdown_view.dart';
 
 class HostQuestionScreen extends ConsumerStatefulWidget {
   final String pin;
@@ -29,6 +30,12 @@ class _HostQuestionScreenState extends ConsumerState<HostQuestionScreen> {
 
   StreamSubscription? _offsetSub;
 
+  // Used only on the rejoin path: if a host re-enters this screen while the
+  // game is still in the pre-game countdown, advance to the first question
+  // once the countdown elapses (guarded so it only fires once).
+  Timer? _countdownWatch;
+  bool _countdownAdvanced = false;
+
   // Cache the quiz fetch so it isn't re-issued on every rebuild.
   // The quizId is fixed for the whole game, so a single fetch is enough.
   Future<QuizModel?>? _quizFuture;
@@ -49,11 +56,41 @@ class _HostQuestionScreenState extends ConsumerState<HostQuestionScreen> {
     _offsetSub = GameRepository().watchServerTimeOffset().listen((offset) {
       if (mounted) setState(() => _serverOffsetMs = offset);
     });
+    // Rejoin safety-net: advance the pre-game countdown if the host lands here
+    // while it's still running. During a normal game the host enters this
+    // screen only once the question has started, so this stays a no-op then.
+    _countdownWatch =
+        Timer.periodic(const Duration(milliseconds: 500), (_) => _maybeStartFirstQuestion());
+  }
+
+  Future<void> _maybeStartFirstQuestion() async {
+    if (_countdownAdvanced) return;
+    final session = ref.read(gameSessionProvider(widget.pin)).valueOrNull;
+    if (session == null || session.status != GameStatus.countdown) return;
+    final endsAt = session.countdownEndsAt;
+    if (endsAt == null || DateTime.now().isBefore(endsAt)) return;
+
+    _countdownAdvanced = true;
+    final quiz = await _quizFor(session.quizId);
+    if (quiz == null || quiz.questions.isEmpty) {
+      _countdownAdvanced = false; // let it retry once the quiz loads
+      return;
+    }
+    // Re-check: a participant may have advanced it while we awaited the quiz.
+    final current = ref.read(gameSessionProvider(widget.pin)).valueOrNull;
+    if (current == null || current.status != GameStatus.countdown) return;
+
+    await ref.read(gameNotifierProvider.notifier).nextQuestion(
+      widget.pin,
+      0,
+      durationSeconds: quiz.questions.first.timeLimitSeconds,
+    );
   }
 
   @override
   void dispose() {
     _offsetSub?.cancel();
+    _countdownWatch?.cancel();
     _timer?.cancel();
     super.dispose();
   }
@@ -157,6 +194,33 @@ class _HostQuestionScreenState extends ConsumerState<HostQuestionScreen> {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               context.go('/results/${widget.pin}');
             });
+          }
+
+          // Rejoin path: the host re-entered while the game hasn't reached the
+          // first question yet. Show the shared countdown (it advances via
+          // _maybeStartFirstQuestion / participants) rather than the question UI.
+          if (session.status == GameStatus.countdown) {
+            return CountdownView(
+              endsAt: session.countdownEndsAt ??
+                  DateTime.now().add(const Duration(seconds: 60)),
+              title: 'Starting in...',
+            );
+          }
+          if (session.status == GameStatus.lobby) {
+            return const Scaffold(
+              backgroundColor: AppTheme.primary,
+              body: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CircularProgressIndicator(color: AppTheme.accent),
+                    SizedBox(height: 16),
+                    Text('Waiting in lobby…',
+                        style: TextStyle(color: Colors.white70)),
+                  ],
+                ),
+              ),
+            );
           }
 
           return FutureBuilder<QuizModel?>(

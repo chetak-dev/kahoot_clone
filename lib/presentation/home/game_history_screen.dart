@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/app_theme.dart';
-import '../../data/models/game_result_model.dart';
 import '../../data/repositories/game_repository.dart';
 import '../../data/services/game_provider.dart';
 
@@ -64,72 +63,62 @@ class GameHistoryScreen extends ConsumerWidget {
                   color: Colors.white10,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Theme(
-                  data: Theme.of(context)
-                      .copyWith(dividerColor: Colors.transparent),
-                  child: ExpansionTile(
-                    iconColor: Colors.white70,
-                    collapsedIconColor: Colors.white70,
-                    title: Text(r.quizTitle,
-                        style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold)),
-                    subtitle: Text(
-                      '${_formatDate(r.playedAt)}  •  ${r.playerCount} players'
-                          '${winner != null ? '  •  🥇 ${winner.name}' : ''}',
-                      style:
-                      const TextStyle(color: Colors.white54, fontSize: 12),
-                    ),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.delete_outline,
-                          color: Colors.redAccent),
-                      tooltip: 'Delete',
-                      onPressed: () async {
-                        final confirm = await showDialog<bool>(
-                          context: context,
-                          builder: (ctx) => AlertDialog(
-                            backgroundColor: AppTheme.background,
-                            title: const Text('Delete result',
-                                style: TextStyle(color: Colors.white)),
-                            content: Text(
-                                'Delete the saved result for "${r.quizTitle}"?',
-                                style:
-                                const TextStyle(color: Colors.white70)),
-                            actions: [
-                              TextButton(
-                                  onPressed: () => Navigator.pop(ctx, false),
-                                  child: const Text('Cancel',
-                                      style:
-                                      TextStyle(color: Colors.white54))),
-                              TextButton(
-                                  onPressed: () => Navigator.pop(ctx, true),
-                                  child: const Text('Delete',
-                                      style: TextStyle(color: Colors.red))),
-                            ],
-                          ),
-                        );
-                        if (confirm == true) {
-                          await GameRepository().deleteGameResult(r.id);
-                        }
-                      },
-                    ),
-                    children: r.entries.asMap().entries.map((e) {
-                      final rank = e.key + 1;
-                      final entry = e.value;
-                      return ListTile(
-                        dense: true,
-                        leading: Text('$rank',
-                            style: const TextStyle(
-                                color: Colors.white54,
-                                fontWeight: FontWeight.bold)),
-                        title: Text(entry.name,
-                            style: const TextStyle(color: Colors.white)),
-                        trailing: Text('${entry.score} pts',
-                            style: const TextStyle(
-                                color: AppTheme.accent,
-                                fontWeight: FontWeight.bold)),
-                      );
-                    }).toList(),
+                child: ListTile(
+                  contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  onTap: () => context.push('/result-detail', extra: r),
+                  title: Text(r.quizTitle,
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold)),
+                  subtitle: Text(
+                    '${_formatDate(r.playedAt)}  •  ${r.playerCount} players'
+                        '${winner != null ? '  •  🥇 ${winner.name}' : ''}',
+                    style:
+                    const TextStyle(color: Colors.white54, fontSize: 12),
+                  ),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.delete_outline,
+                            color: Colors.redAccent),
+                        tooltip: 'Delete',
+                        onPressed: () async {
+                          final confirm = await showDialog<bool>(
+                            context: context,
+                            builder: (ctx) => AlertDialog(
+                              backgroundColor: AppTheme.background,
+                              title: const Text('Delete result',
+                                  style: TextStyle(color: Colors.white)),
+                              content: Text(
+                                  'Delete the saved result for "${r.quizTitle}"?',
+                                  style:
+                                  const TextStyle(color: Colors.white70)),
+                              actions: [
+                                TextButton(
+                                    onPressed: () =>
+                                        Navigator.pop(ctx, false),
+                                    child: const Text('Cancel',
+                                        style:
+                                        TextStyle(color: Colors.white54))),
+                                TextButton(
+                                    onPressed: () => Navigator.pop(ctx, true),
+                                    child: const Text('Delete',
+                                        style:
+                                        TextStyle(color: Colors.red))),
+                              ],
+                            ),
+                          );
+                          if (confirm == true) {
+                            await GameRepository().deleteSavedResult(r);
+                          }
+
+                        },
+                      ),
+                      const Icon(Icons.chevron_right_rounded,
+                          color: Colors.white38),
+                    ],
                   ),
                 ),
               );

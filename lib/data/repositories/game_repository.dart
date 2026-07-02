@@ -5,9 +5,8 @@ import '../models/game_session_model.dart';
 import '../models/quiz_model.dart';
 import '../models/game_result_model.dart';
 
-
 class GameRepository {
-  // ✅ Fixed: explicit regional URL
+  // ✓ Fixed: explicit regional URL
   final _db = FirebaseDatabase.instanceFor(
     app: Firebase.app(),
     databaseURL: 'https://kahoot-clone-39e22-default-rtdb.asia-southeast1.firebasedatabase.app',
@@ -43,7 +42,6 @@ class GameRepository {
     final status = data['status'];
     if (status != 'lobby' && status != 'countdown') return false;
 
-
     final player = PlayerSession(
       playerId: playerId,
       name: name,
@@ -66,6 +64,68 @@ class GameRepository {
     });
   }
 
+  // Reconcile results for a host who may have been absent when their game(s)
+  // ended (e.g. dropped off during the game, which now auto-advances to the
+  // end without them). For every ended session hosted by this host that has
+  // no saved result yet, build and save the result so it shows up in history.
+  //
+  // Idempotent: a game is considered already-saved if a result whose id starts
+  // with "<gamePin>_" exists, so re-running this never creates duplicates.
+  Future<void> reconcileEndedHostResults(String hostId) async {
+    final snapshot = await _db
+        .ref('game_sessions')
+        .orderByChild('hostId')
+        .equalTo(hostId)
+        .get();
+    if (!snapshot.exists) return;
+
+    final endedSessions = Map<dynamic, dynamic>.from(snapshot.value as Map)
+        .values
+        .map((e) =>
+        GameSessionModel.fromMap(Map<String, dynamic>.from(e as Map)))
+        .where((s) =>
+    s.status == GameStatus.ended && s.players.isNotEmpty)
+        .toList();
+    if (endedSessions.isEmpty) return;
+
+    // Ids of results already saved for this host, to avoid duplicates.
+    final existing = await _firestore
+        .collection('game_results')
+        .where('hostId', isEqualTo: hostId)
+        .get();
+    final existingIds = existing.docs.map((d) => d.id).toSet();
+
+    for (final session in endedSessions) {
+      final alreadySaved =
+      existingIds.any((id) => id.startsWith('${session.gamePin}_'));
+      if (alreadySaved) continue;
+
+      final quiz = await getQuizForGame(session.quizId);
+      final sorted = session.players.values.toList()
+        ..sort((a, b) {
+          final scoreDiff = b.score.compareTo(a.score);
+          if (scoreDiff != 0) return scoreDiff;
+          // Tiebreaker: faster total response time ranks higher.
+          return a.totalResponseTimeMs.compareTo(b.totalResponseTimeMs);
+        });
+
+      final result = GameResultModel(
+        // Deterministic id (based on the session's creation time) so repeated
+        // reconciles overwrite the same doc instead of creating duplicates.
+        id: '${session.gamePin}_${session.createdAt.millisecondsSinceEpoch}',
+        hostId: session.hostId,
+        quizId: session.quizId,
+        quizTitle: quiz?.title ?? 'Quiz',
+        playedAt: session.createdAt,
+        playerCount: sorted.length,
+        entries: sorted
+            .map((p) => ResultEntry(name: p.name, score: p.score))
+            .toList(),
+      );
+      await saveGameResult(result);
+    }
+  }
+
   // Host: start game / next question
   Future<void> updateGameStatus(String pin, GameStatus status) async {
     await _db
@@ -85,8 +145,6 @@ class GameRepository {
     }
     await _db.ref('game_sessions/$pin').update(updates);
   }
-
-
 
   // Player: submit answer
   // Player: submit answer
@@ -108,7 +166,6 @@ class GameRepository {
         .ref('game_sessions/$pin/players/$playerId/totalResponseTimeMs')
         .set(ServerValue.increment(responseTimeMs));
   }
-
 
   // End game
   Future<void> endGame(String pin) async {
@@ -174,8 +231,28 @@ class GameRepository {
     await _firestore.collection('game_results').doc(id).delete();
   }
 
-  // Difference (ms) between this device's clock and Firebase's server clock.
-  // Difference (ms) between this device's clock and Firebase's server clock.
+  // Permanently delete a saved result AND its underlying game session, so the
+  // host-return reconcile can never recreate it. Result ids are of the form
+  // "<gamePin>_<timestamp>", so the PIN is the part before the first "_".
+  //
+  // The session is only removed if it is actually an ended game — this guards
+  // against the rare case where the same PIN has since been reused by a new,
+  // still-running game (deleting that would break a live session).
+  Future<void> deleteSavedResult(GameResultModel result) async {
+    await deleteGameResult(result.id);
+
+    final pin = result.id.split('_').first;
+    if (pin.isEmpty) return;
+
+    final snapshot = await _db.ref('game_sessions/$pin').get();
+    if (!snapshot.exists) return;
+    final data = Map<String, dynamic>.from(snapshot.value as Map);
+    if (data['status'] == 'ended') {
+      await deleteGame(pin);
+    }
+  }
+
+
   // Difference (ms) between this device's clock and Firebase's server clock.
   Future<int> getServerTimeOffset() async {
     // NOTE: `.info/serverTimeOffset` is a synthetic client-side node.
@@ -195,16 +272,11 @@ class GameRepository {
     return 0;
   }
 
-
-
   Stream<int> watchServerTimeOffset() {
     return _db.ref('.info/serverTimeOffset').onValue.map((event) {
       final v = event.snapshot.value;
       return v is num ? v.toInt() : 0;
     });
   }
-
-
-
 
 }
